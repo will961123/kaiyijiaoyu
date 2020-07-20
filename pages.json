@@ -1,0 +1,79 @@
+{
+	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
+		{
+			"path": "pages/index/index",
+			"style": {
+				"navigationStyle": "custom"
+			}
+		}, {
+			"path": "pages/index/openVip",
+			"style": {}
+		}, {
+			"path": "pages/index/coursesList",
+			"style": {}
+		}, {
+			"path": "pages/index/videoDetails",
+			"style": {}
+		}, {
+			"path": "pages/learningRecord/learningRecord",
+			"style": {
+				"navigationStyle": "custom"
+			}
+		}
+	    ,{
+            "path" : "pages/my/my",
+            "style" : {
+				"navigationStyle": "custom"
+			}
+        }
+        ,{
+            "path" : "pages/my/orderList",
+            "style" : {}
+        },{
+            "path" : "pages/my/scholarship",
+            "style" : {}
+        }
+        ,{
+            "path" : "pages/my/withdrawal",
+            "style" : {}
+        }
+        ,{
+            "path" : "pages/my/teamList",
+            "style" : {}
+        }
+        ,{
+            "path" : "pages/my/myCollection",
+            "style" : {}
+        }
+    ],
+	"tabBar":{
+		"color":"#999",
+		"selectedColor":"#4288c8",
+		"list":[
+			{
+				"iconPath":"static/tab1.png",
+				"selectedIconPath":"static/tab2.png",
+				"text":"首页",
+				"pagePath":"pages/index/index"
+			},
+			{
+				"iconPath":"static/tab3.png",
+				"selectedIconPath":"static/tab4.png",
+				"text":"学习记录",
+				"pagePath":"pages/learningRecord/learningRecord"
+			},
+			{
+				"iconPath":"static/tab5.png",
+				"selectedIconPath":"static/tab6.png",
+				"text":"我的",
+				"pagePath":"pages/my/my"
+			}
+		]
+	},
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "uni-app",
+		"navigationBarBackgroundColor": "#F8F8F8",
+		"backgroundColor": "#F8F8F8"
+	}
+}
