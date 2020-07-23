@@ -21,6 +21,8 @@
 			</view>
 			<label @click="checkedIdx = index" class="radio"><radio :checked="checkedIdx === index" style="transform: scale(.8);" color="red" value="" /></label>
 		</view>
+
+		<button @click="createOrder" class="btn cu-btn bg-gradual-blue">立即支付</button>
 	</view>
 </template>
 
@@ -29,19 +31,46 @@ export default {
 	data() {
 		return {
 			checkedIdx: -1,
-			list: [
-				{ name: '执行力篇', money: 36.5, desc: '歪比巴卜歪比巴卜歪比巴卜歪比巴卜', type: -1 },
-				{ name: '执行力篇', money: 36.5, desc: '歪比巴卜歪比巴卜歪比巴卜歪比巴卜', type: 1 },
-				{ name: '执行力篇', money: 36.5, desc: '歪比巴卜歪比巴卜歪比巴卜歪比巴卜', type: -1 },
-				{ name: '执行力篇', money: 36.5, desc: '歪比巴卜歪比巴卜歪比巴卜歪比巴卜', type: -1 }
-			]
+			list: []
 		};
 	},
 	onLoad() {
 		this.getList();
 	},
 	methods: {
-		
+		createOrder() {
+			if (this.checkedIdx < 0) {
+				uni.showModal({
+					title: '提示',
+					content: '请选择会员!',
+					showCancel: false
+				});
+				return false;
+			}
+			let formData = {
+				vipIds: [this.list[this.checkedIdx].id]
+			};
+			this.showLoading();
+			this.request({
+				url: '/app/web/customer/order/add',
+				data: formData,
+				method: 'POST',
+				success: res => {
+					console.log('createOrder', res);
+					this.getWxPayConfig(res.data.data);
+				}
+			});
+		},
+		getWxPayConfig(orderId) {
+			this.request({
+				url: '/app/web/customer/order/pay/' + orderId,
+				method: 'POST',
+				success: res => {
+					uni.hideLoading();
+					console.log('getWxPayConfig', res);
+				}
+			});
+		},
 		getList() {
 			this.request({
 				url: '/app/web/vip/list',
@@ -62,6 +91,16 @@ export default {
 .openVipView {
 	padding: 0 70rpx;
 	min-height: 100vh;
+	padding-bottom: 50px;
+	.btn {
+		width: 100%;
+		height: 40px;
+		line-height: 40px;
+		padding: 0;
+		position: fixed;
+		left: 0;
+		bottom: 0;
+	}
 	.headBox {
 		padding: 26rpx 0 0 0;
 		text-align: center;

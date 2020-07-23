@@ -12,37 +12,85 @@
 		</view>
 		<view class="item flex align-center bg-white">
 			<view class="label">昵&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;称:</view>
-			<input type="text" value="" placeholder="请填写昵称" />
+			<input v-model="nickName" type="text" value="" placeholder="请填写昵称" />
 		</view>
 		<view class="item flex align-center bg-white">
 			<view class="label">手&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;机:</view>
-			<input type="text" value="" placeholder="请填写手机号" />
+			<input v-model="phone" type="text" value="" placeholder="请填写手机号" />
 		</view>
 		<view class="item flex align-center bg-white">
 			<view class="label">账户姓名:</view>
-			<input type="text" value="" placeholder="请填写昵称" />
+			<input v-model="name" type="text" value="" placeholder="请填写昵称" />
 		</view>
 		<view class="item flex align-center bg-white">
 			<view class="label">银行卡号:</view>
-			<input type="text" value="" placeholder="请填写银行卡号" />
+			<input v-model="bankCard" type="text" value="" placeholder="请填写银行卡号" />
 		</view>
 		<view class="item flex align-center bg-white">
 			<view class="label">开户银行:</view>
-			<input type="text" value="" placeholder="请填写开户银行" />
+			<input v-model="bankName" type="text" value="" placeholder="请填写开户银行" />
 		</view>
 		<view class="item flex align-center bg-white">
-			<view class="label">奖&nbsp;&nbsp;学&nbsp;&nbsp;金:</view>
+			<view v-model="money" class="label">奖&nbsp;&nbsp;学&nbsp;&nbsp;金:</view>
 			<input type="digit" value="" placeholder="请填写奖学金" />
 		</view>
 
-		<view class="btn saveBtn bg-gradual-blue">确认提现</view>
+		<view @click="withdrawal" class="btn saveBtn bg-gradual-blue">确认提现</view>
 	</view>
 </template>
 
 <script>
 export default {
 	data() {
-		return {};
+		return {
+			totMoney: 0.0,
+			nickName: '',
+			phone: '',
+			name: '',
+			bankCard: '',
+			bankName: '',
+			money: ''
+		};
+	},
+	methods: {
+		withdrawal() {
+			if (!this.phone) {
+				this.showToast('请输入电话');
+				return false;
+			}
+			if (this.phone.length !== 11) {
+				this.showToast('请输入正确的电话');
+				return false;
+			}
+			if (!this.name) {
+				this.showToast('请输入姓名');
+				return false;
+			}
+			if (!this.bankCard) {
+				this.showToast('请输入银行卡号');
+				return false;
+			}
+			if (!this.bankName) {
+				this.showToast('请输入开户行');
+				return false;
+			}
+
+			this.showLoading();
+			this.request({
+				url: '/app/web/customer/bonus/draw',
+				data: {
+					bankCard: this.bankCard,
+					bankName: this.bankName,
+					name: this.name,
+					phone: this.phone
+				},
+				method:"POST",
+				success:res=>{
+					uni.hideLoading()
+					console.log('提现',res);
+				}
+			});
+		}
 	}
 };
 </script>
@@ -76,7 +124,7 @@ export default {
 			font-size: 28rpx;
 		}
 	}
-	.saveBtn{
+	.saveBtn {
 		margin: 40rpx 30rpx 0 30rpx;
 		line-height: 40px;
 		text-align: center;

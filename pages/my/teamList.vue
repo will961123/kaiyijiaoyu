@@ -1,38 +1,66 @@
 <template>
-	<view class="teamListView">  
+	<view class="teamListView">
 		<view v-for="(item, index) in list" :key="index" class="item bg-white flex align-center">
-			<image :src="item.img" mode="aspectFill"></image>
+			<image :src="item.headimgurl" mode="aspectFill"></image>
 			<view class="infoBox">
-				<view class="name">{{ item.name }}</view>
-				<view class="time">邀请日期：{{ item.time }}</view>
+				<view class="name">{{ item.nickName }}</view>
+				<view class="time">
+					购买日期：{{ item.createTime }}
+					<text style="margin: 0 8px;">奖金</text>
+					{{ item.amount | filterMoney }}元
+				</view>
 			</view>
-		</view> 
+		</view>
 	</view>
 </template>
 
 <script>
 export default {
 	data() {
-		return { 
-			list: [
-				{
-					img: '/static/logo.png',
-					name: '歪比巴布',
-					time: '2020-2020-2020'
-				},
-				{
-					img: '/static/logo.png',
-					name: '歪比巴布',
-					time: '2020-2020-2020'
-				}
-			]
+		return {
+			list: [],
+			page: 1,
+			hasNext: true
 		};
+	},
+	onLoad() {
+		this.getMoneyList();
+	},
+	onReachBottom() {
+		if (this.hasNext) {
+			this.getMoneyList();
+		}
+	},
+	filters: {
+		filterMoney(val) {
+			return (val / 100).toFixed(2);
+		}
+	},
+	methods: {
+		getMoneyList() {
+			this.request({
+				url: '/app/web/customer/bonus/item',
+				data: {
+					pageNo: this.page,
+					pageSize: 20
+				},
+				method: 'POST',
+				success: res => {
+					console.log('moneyList', res);
+					if (res.data.code === 200) {
+						this.page++;
+						this.hasNext = res.data.data.hasNext;
+						this.list.push(...res.data.data.data);
+					}
+				}
+			});
+		}
 	}
 };
 </script>
 
 <style lang="scss">
-.teamListView { 
+.teamListView {
 	.item {
 		padding: 15rpx;
 		border: 1rpx solid #deded;
@@ -69,7 +97,7 @@ export default {
 			}
 		}
 	}
-	.invitation{
+	.invitation {
 		width: 100%;
 		height: 40px;
 		line-height: 40px;

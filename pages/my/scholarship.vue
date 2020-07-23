@@ -13,38 +13,34 @@
 			</view>
 			<view class="numBox text-center">
 				<view>奖学金(元)</view>
-				<navigator url="/pages/my/teamList" class="num text-bold">
-					￥131.40
-				</navigator>  
+				<navigator url="/pages/my/teamList" class="num text-bold">￥{{ totMoney|filterMoney }}</navigator>
 			</view>
-			<navigator url="/pages/my/withdrawal" class="getMoney btn cu-btn bg-gradual-red"> 
-				提现
-			</navigator> 
+			<navigator url="/pages/my/withdrawal" class="getMoney btn cu-btn bg-gradual-red">提现</navigator>
 		</view>
 
 		<view class="titleBox flex text-center">
-			<view @click="titidx = 0" :class="{ select: titidx === 0 }" class="item">
-				已邀请
-				<text class="text-blue">VIP</text>
-				会员:3
-			</view>
-			<view @click="titidx = 1" :class="{ select: titidx === 1 }" class="item">
+			<view @click="changeTitIdx(0)" :class="{ select: titidx === 0 }" class="item">
 				已邀请
 				<text class="text-blue">普通</text>
-				会员:3
+				会员:{{list[0].length}}
+			</view>
+			<view @click="changeTitIdx(1)" :class="{ select: titidx === 1 }" class="item">
+				已邀请
+				<text class="text-blue">VIP</text>
+				会员:{{list[1].length}}
 			</view>
 		</view>
-		<view v-for="(item, index) in list" :key="index" class="item bg-white flex align-center">
+		<view v-for="(item, index) in list[titidx]" :key="index" class="item bg-white flex align-center">
 			<image :src="item.img" mode="aspectFill"></image>
 			<view class="infoBox">
 				<view class="name">{{ item.name }}</view>
 				<view class="time">邀请日期：{{ item.time }}</view>
 			</view>
 		</view>
-		
-		<view class="invitation btn cu-btn bg-gradual-blue">
-			邀请学员
-		</view>
+
+		<will-nodata v-if="list[titidx].length === 0" tittle="暂无数据!"></will-nodata>
+
+		<view class="invitation btn cu-btn bg-gradual-blue">邀请学员</view>
 	</view>
 </template>
 
@@ -52,30 +48,84 @@
 export default {
 	data() {
 		return {
-			titidx: 0,
 			userInfo: {
 				img: '/static/logo.png',
 				name: '歪比',
 				lv: '管理力篇'
 			},
-			list: [
-				{
-					img: '/static/logo.png',
-					name: '歪比巴布',
-					time: '2020-2020-2020'
-				},
-				{
-					img: '/static/logo.png',
-					name: '歪比巴布',
-					time: '2020-2020-2020'
-				}
-			]
+			totMoney: 0,
+			titidx: 0, // 1会员 0免费
+			list: [[], []],
+			page: [1, 1],
+			hasNext: [true, true]
 		};
+	},
+	onLoad() {
+		this.getTotMoney();
+		this.getList(this.titidx);
+		this.getList(1);
+	},
+	onReachBottom() {
+		if (this.hasNext[this.titidx]) {
+			this.getList(this.titidx);
+		}
+	},
+	filters: {
+		filterMoney(val) {
+			return (val / 100).toFixed(2);
+		}
+	},
+	methods: {
+		changeTitIdx(type) {
+			if (this.titidx === type) {
+				return false;
+			}
+			this.titidx = type;
+			this.getList(this.titidx);
+		},
+		getList(type) {
+			this.showLoading();
+			this.request({
+				url: '/app/web/customer/student',
+				method: 'POST',
+				data: {
+					pageNo: this.page[type],
+					pageSize: 10,
+					type
+				},
+				success: res => {
+					uni.hideLoading();
+					console.log('list', res.data.data);
+					if (res.data.code === 200) {
+						this.page[type]++;
+						this.hasNext[type] = res.data.data.hasNext;
+						this.list[type].push(...res.data.data.data);
+					}
+				}
+			});
+		},
+		getTotMoney() {
+			this.showLoading();
+			this.request({
+				url: '/app/web/customer/bonus/amount',
+				method: 'POST',
+				success: res => {
+					uni.hideLoading();
+					console.log('totMoney', res);
+					if (res.data.code === 200) {
+						this.totMoney = res.data.data.toFixed(2);
+					}
+				}
+			});
+		}
 	}
 };
 </script>
 
 <style lang="scss">
+page {
+	background-color: #fff;
+}
 .scholarshipView {
 	padding-bottom: 40px;
 	.topInfo {
@@ -157,7 +207,7 @@ export default {
 			}
 		}
 	}
-	.invitation{
+	.invitation {
 		width: 100%;
 		height: 40px;
 		line-height: 40px;

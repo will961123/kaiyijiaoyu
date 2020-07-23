@@ -1,9 +1,9 @@
 <template>
 	<view class="coursesListView bg-white">
 		<view @click="navgater('/pages/index/videoDetails?id=' + item.id)" v-for="(item, index) in list" :key="index" class="item flex">
-			<image :src="imgUrl + item.featureUri" mode="aspectFill"></image>
+			<image :src="imgUrl + item.coverUri" mode="aspectFill"></image>
 			<view class="infoBox flex flex-direction justify-around ">
-				<view class="tit">{{ item.title }}</view>
+				<view class="tit textov1">{{ item.title }}</view>
 				<view class="info flex justify-between align-center">
 					<view class="name">主讲人: {{ item.author }}</view>
 					<view class="time">{{ item.updateTime }}</view>
@@ -11,11 +11,11 @@
 				<view class="numBox flex  justify-between align-center">
 					<view class="see">
 						<text class="cuIcon cuIcon-video"></text>
-						{{ item.userView }}
+						{{ item.pageView }}
 					</view>
 					<view class="time">
 						<text class="cuIcon cuIcon-time"></text>
-						13分55秒
+						{{item.duration}}
 					</view>
 				</view>
 			</view>
@@ -87,8 +87,10 @@ export default {
 			margin-right: 18rpx;
 		}
 		.infoBox {
-			flex: 1;
+			// flex: 1;
+			width: calc(100% - 218rpx);
 			.tit {
+				width: 100%;
 				font-weight: 700;
 				font-size: 24rpx;
 			}

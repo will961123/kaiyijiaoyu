@@ -1,28 +1,28 @@
 <template>
 	<view class="learningRecordView bg-white">
 		<view class="iptBox flex align-center">
-			<input v-model="searchStr" type="text" value=""  placeholder="搜索课程" />
+			<input v-model="searchStr" type="text" value="" placeholder="搜索课程" />
 			<text class="cuIcon cuIcon-search"></text>
-			<button  class="cu-btn btn bg-gradual-blue">搜索</button>
+			<button @click="search" class="cu-btn btn bg-gradual-blue">搜索</button>
 		</view>
-		
-		<view @click="navgater('/pages/index/videoDetails?id=') + item.courseId" v-for="(item, index) in latestCourses" :key="index" class="item flex">
-			<image :src="item.img" mode="aspectFill"></image>
+
+		<view @click="navgater('/pages/index/videoDetails?id=' + item.videoId)" v-for="(item, index) in latestCourses" :key="index" class="item flex">
+			<image :src="imgUrl + item.coverUri" mode="aspectFill"></image>
 			<view class="infoBox flex flex-direction justify-around ">
-				<view class="tit">{{ item.title }}</view>
+				<view class="tit">{{ item.name }}</view>
 				<view class="info flex justify-between align-center">
-					<view class="name">主讲人: {{ item.name }}</view>
-					<view class="time">{{ item.time }}</view>
+					<view class="name">主讲人: {{ item.author }}</view>
+					<view class="time">{{ item.updateTime }}</view>
 				</view>
 				<view class="numBox flex  justify-between align-center">
 					<view class="see">
 						<text class="cuIcon cuIcon-video"></text>
-						123
+						{{ item.pageView }}
 					</view>
-					<view class="time">
+					<!-- 	<view class="time">
 						<text class="cuIcon cuIcon-time"></text>
 						13分55秒
-					</view>
+					</view> -->
 				</view>
 			</view>
 		</view>
@@ -33,17 +33,51 @@
 export default {
 	data() {
 		return {
-			searchStr:'',
-			latestCourses: [
-				{ img: '/static/logo.png', title: '歪比巴卜歪比巴卜', courseId: 1, name: '李拴蛋', time: '2020.03.10' },
-				{ img: '/static/logo.png', title: '歪比巴卜歪比巴卜', courseId: 1, name: '李拴蛋', time: '2020.03.10' },
-				{ img: '/static/logo.png', title: '歪比巴卜歪比巴卜', courseId: 1, name: '李拴蛋', time: '2020.03.10' },
-				{ img: '/static/logo.png', title: '歪比巴卜歪比巴卜', courseId: 1, name: '李拴蛋', time: '2020.03.10' },
-				{ img: '/static/logo.png', title: '歪比巴卜歪比巴卜', courseId: 1, name: '李拴蛋', time: '2020.03.10' }
-			]
+			searchStr: '',
+			latestCourses: [],
+			page: 1,
+			hasNext: true
 		};
 	},
+	onLoad() {
+		this.getList();
+	},
+	onReachBottom() {
+		if (this.hasNext) {
+			this.getList();
+		}
+	},
 	methods: {
+		search() {
+			// if(!this.searchStr){
+			// 	return false
+			// }
+			this.page = 1;
+			this.hasNext = true;
+			this.latestCourses = [];
+			this.getList()
+		},
+		getList() {
+			this.showLoading();
+			this.request({
+				url: '/app/web/customer/learn/page',
+				method: 'POST',
+				data: {
+					pageNo: this.page,
+					pageSize: 10,
+					name: this.searchStr
+				},
+				success: res => {
+					uni.hideLoading();
+					console.log('记录', res);
+					if (res.data.code === 200) {
+						this.page++;
+						this.hasNext = res.data.data.hasNext;
+						this.latestCourses.push(...res.data.data.data);
+					}
+				}
+			});
+		},
 		navgater(path) {
 			uni.navigateTo({
 				url: path
@@ -57,22 +91,22 @@ export default {
 .learningRecordView {
 	padding: 0 30rpx;
 	padding-top: 14px;
-	.iptBox{
+	.iptBox {
 		border: 1px solid #15adc6;
 		border-radius: 15rpx;
 		overflow: hidden;
 		margin-bottom: 14px;
-		input{
+		input {
 			flex: 1;
 			font-size: 24rpx;
 			padding-left: 30rpx;
 		}
-		.cuIcon{
+		.cuIcon {
 			font-size: 38rpx;
 			margin-right: 20rpx;
 			color: #999;
 		}
-		button{
+		button {
 			padding-left: 60rpx;
 			padding-right: 60rpx;
 			font-size: 24rpx;

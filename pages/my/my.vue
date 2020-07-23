@@ -18,6 +18,10 @@
 		</view>
 
 		<view class="endBox">{{ supportStr }}</view>
+
+		<view  v-if="showPoster" @click.self="showPoster = false" class="mc">
+			<view @click.stop="" class="mcContent"><image :src="imgUrl + poster" mode="widthFix"></image></view>
+		</view>
 	</view>
 </template>
 
@@ -26,6 +30,7 @@ export default {
 	data() {
 		return {
 			supportStr: '',
+			phone: '',
 			userInfo: {
 				img: '/static/logo.png',
 				name: '歪比',
@@ -62,13 +67,28 @@ export default {
 					name: '联系我们',
 					path: ''
 				}
-			]
+			],
+			poster: '2157CB76554000E49EC09FC2E83E4D2A.jpeg',
+			showPoster: false
 		};
 	},
 	onLoad() {
 		this.getSupport();
+		this.getPhone();
 	},
 	methods: {
+		getPhone() {
+			this.request({
+				url: '/app/web/common/contact/phone',
+				method: 'POST',
+				success: res => {
+					console.log('phone', res);
+					if (res.data.code === 200) {
+						this.phone = res.data.data;
+					}
+				}
+			});
+		},
 		getSupport() {
 			this.request({
 				url: '/app/web/common/technical/support',
@@ -83,6 +103,10 @@ export default {
 		},
 		hanlderClick(idx) {
 			if (idx === 3) {
+				if (this.poster) {
+					this.showPoster = true;
+					return false;
+				}
 			} else if (idx === 5) {
 				uni.showActionSheet({
 					itemList: ['呼叫', '复制'],
@@ -90,10 +114,10 @@ export default {
 					success: res => {
 						if (res.tapIndex === 0) {
 							uni.makePhoneCall({
-								phoneNumber: '123456'
+								phoneNumber: String(this.phone)
 							});
 						} else if (res.tapIndex === 1) {
-							uni.setClipboardData({ data: '112346' });
+							uni.setClipboardData({ data: String(this.phone) });
 						} else {
 						}
 					}
@@ -111,6 +135,23 @@ export default {
 <style lang="scss">
 page {
 	background-color: #fff;
+}
+.mc {
+	position: fixed;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100vh;
+	background-color: rgba(0, 0, 0, 0.3);
+	padding: 20px 30rpx;
+	.mcContent {
+		// width: calc(100% - 60rpx);
+		width: 100%;
+		image {
+			width: 100%;
+			max-height: 100%;
+		}
+	}
 }
 .myView {
 	.topInfo {

@@ -6,7 +6,8 @@
 				v-for="(item, index) in bannerList"
 				:key="index"
 			>
-				<image :src="imgUrl + item.uri" mode="aspectFill"></image>
+				<!-- :style="{backgroundImage:'url('+imgUrl + item.uri+')'}" -->
+				<image :src="imgUrl + item.uri" mode="widthFix"></image>
 			</swiper-item>
 		</swiper>
 
@@ -21,23 +22,23 @@
 			<view class="title">免费课程</view>
 			<scroll-view class="sv" scroll-x="true">
 				<view @click="navgater('/pages/index/videoDetails?id=' + item.id)" v-for="(item, index) in freeCategoryList" :key="index" class="item text-center">
-					<image :src="imgUrl + item.featureUri" mode="aspectFill"></image>
-					<view>{{ item.title }}</view>
+					<image :src="imgUrl + item.coverUri" mode="aspectFill"></image>
+					<view class="textov1">{{ item.title }}</view>
 				</view>
 			</scroll-view>
 		</view>
 
-		<view class="gotoVip"><image @click="navgater('/pages/index/openVip')" :src="imgUrl + adInfo.uri" mode="aspectFill"></image></view>
+		<view class="gotoVip"><image @click="navgater('/pages/index/openVip')" :src="imgUrl + adInfo.uri" mode="widthFix"></image></view>
 
 		<view class="section latestCourses bg-white">
 			<view class="title">最新课程</view>
 			<view @click="navgater('/pages/index/videoDetails?id=' + item.id)" v-for="(item, index) in latestCourses" :key="index" class="item flex">
-				<image :src="imgUrl + item.featureUri" mode="aspectFill"></image>
+				<image :src="imgUrl + item.coverUri" mode="aspectFill"></image>
 				<view class="infoBox flex flex-direction justify-between">
-					<view class="tit">{{ item.title }}</view>
+					<view class="tit textov1">{{ item.title }}</view>
 					<view class="info flex justify-between align-center">
 						<view class="name">主讲人: {{ item.author }}</view>
-						<view class="time">{{ item.updateTime }}</view>
+						<view class="time">{{ item.publishedTime }}</view>
 					</view>
 				</view>
 			</view>
@@ -46,12 +47,12 @@
 		<view class="section latestCourses bg-white">
 			<view class="title">凯一专栏</view>
 			<view @click="navgater('/pages/index/videoDetails?id=' + item.id)" v-for="(item, index) in kaiyiList" :key="index" class="item flex">
-				<image :src="imgUrl + item.featureUri" mode="aspectFill"></image>
+				<image :src="imgUrl + item.coverUri" mode="aspectFill"></image>
 				<view class="infoBox flex flex-direction justify-between">
-					<view class="tit">{{ item.title }}</view>
+					<view class="tit textov1">{{ item.title }}</view>
 					<view class="info flex justify-between align-center">
 						<view class="name">主讲人: {{ item.author }}</view>
-						<view class="time">{{ item.updateTime }}</view>
+						<view class="time">{{ item.publishedTime }}</view>
 					</view>
 				</view>
 			</view>
@@ -80,6 +81,15 @@ export default {
 			hasNext: true
 		};
 	},
+	onShow() {
+		this.checkLogin().then(
+			success => {},
+			error => {
+				console.log('获取新token');
+				this.loginGetToken();
+			}
+		);
+	},
 	onLoad() {
 		this.getBannerList();
 		this.getFreeList();
@@ -87,14 +97,28 @@ export default {
 		this.getLatestList();
 		this.getKaiyiList();
 	},
-	onReachBottom() { 
+	onReachBottom() {
 		if (this.hasNext) {
 			this.getKaiyiList();
 		}
 	},
 	methods: {
+		loginGetToken() {
+			this.request({
+				url: '/app/web/support/oauth/1',
+				// url: '/app/web/support/virtual/login',
+				method: 'POST',
+				success: res => {
+					console.log('getToken', res);
+					if (res.data.code === 200) {
+						uni.setStorageSync('token', res.data.data);
+					}
+				}
+			});
+		},
+
 		getKaiyiList() {
-			this.showLoading()
+			this.showLoading();
 			this.request({
 				url: '/app/web/video/feature',
 				method: 'POST',
@@ -104,10 +128,10 @@ export default {
 					pageSize: 10
 				},
 				success: res => {
-					uni.hideLoading()
+					uni.hideLoading();
 					console.log('kaiyi', res);
 					if (res.data.code === 200) {
-						this.page++; 
+						this.page++;
 						this.hasNext = res.data.data.hasNext;
 						this.kaiyiList.push(...res.data.data.data);
 					}
@@ -175,8 +199,13 @@ export default {
 .indexView {
 	background-color: #f1f1f1;
 	.sw {
-		height: 350rpx;
+		height: 300rpx;
 		swiper-item {
+			width: 100%;
+			height: 100%;
+			background-repeat: no-repeat;
+			background-size: cover;
+			background-position: bottom;
 			image {
 				width: 100%;
 				// height: 100%;
@@ -224,6 +253,7 @@ export default {
 				display: inline-block;
 				font-size: 22rpx;
 				margin-right: 20rpx;
+				width: 300rpx;
 				&:last-child {
 					margin-right: 0;
 				}
@@ -240,7 +270,7 @@ export default {
 		margin: 40rpx 0;
 		image {
 			width: 100%;
-			height: 280rpx;
+			// height: 280rpx;
 			border-radius: 20rpx;
 		}
 	}
@@ -254,8 +284,10 @@ export default {
 				margin-right: 18rpx;
 			}
 			.infoBox {
-				flex: 1;
+				// flex: 1;
+				width: calc(100% - 218rpx);
 				.tit {
+					width: 100%;
 					font-weight: 700;
 					font-size: 24rpx;
 				}
