@@ -30,6 +30,8 @@
 				</view>
 			</view>
 		</view>
+		
+		<will-nodata v-if="list.length == 0" tittle="暂无数据"></will-nodata>
 	</view>
 </template>
 
@@ -69,7 +71,7 @@ export default {
 			});
 			this.showLoading();
 			this.request({
-				url: '/app/web/customer/favorites/delete',
+				url: '/app/web/customer/favorites/cancel/999',
 				method: 'POST',
 				data: formData,
 				success: res => {
@@ -126,7 +128,7 @@ export default {
 <style lang="scss">
 .myCollectionView {
 	.title {
-		padding: 10rpx 30rpx 40rpx 30rpx;
+		padding: 16px 30rpx;
 	}
 	.item {
 		padding: 15rpx;

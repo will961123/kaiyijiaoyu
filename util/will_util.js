@@ -1,9 +1,8 @@
 import Vue from 'vue'
 import App from '@/App'
-import QQMapWX from './qqmap-wx-jssdk.js';
-Vue.prototype.qqmap = new QQMapWX({
-	key: 'LKVBZ-RATWD-KBD4N-HSW3M-HWJZF-JJFN5' // 必填
-});
+// import QQMapWX from './qqmap-wx-jssdk.js';
+// Vue.prototype.qqmap = new QQMapWX({ 
+// });
 Vue.prototype.isLoad = function() {
 	if (!uni.getStorageSync('token')) {
 		return false
@@ -48,7 +47,7 @@ Vue.prototype.request = function(obj) {
 		header: header,
 		data: obj.data || {},
 		success: res => {
-			if (res.data.code === 3) {
+			if (res && res.data && res.data.code === 3) {
 				uni.removeStorageSync('token')
 				uni.removeStorageSync('userInfo')
 				uni.showToast({
@@ -107,3 +106,36 @@ Vue.prototype.addPOP = function(fn) {
 Vue.prototype.removePOP = function(fn) {
 	window.removeEventListener('popstate', fn, false);
 }
+Vue.prototype.getQueryString = function(name) {
+	return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.href) || [, ""])[1].replace(
+		/\+/g, '%20')) || null
+}
+
+
+// Vue.prototype.wx = require('jweixin-module');
+// Vue.prototype.wxSdk = function(obj) {
+// 	var that = this;
+// 	this.request({
+// 		url: '/appwx/getConfig',
+// 		data: {
+// 			url: obj.pageUrl
+// 		},
+// 		success: res => {
+// 			var json = JSON.parse(res.data.obj);
+// 			console.log("wx配置", json)
+// 			var config = {};
+// 			config.debug = false;
+// 			config.appId = json.appId;
+// 			config.timestamp = json.timestamp;
+// 			config.nonceStr = json.nonceStr;
+// 			config.signature = json.signature;
+// 			config.jsApiList = json.jsApiList || [];
+// 			config.jsApiList.push('getLocalImgData');
+// 			this.wx.config(config);
+// 			this.wx.ready(function() {
+// 				typeof obj.success == "function" && obj.success(res)
+// 			});
+// 		},
+// 		fail: res => {}
+// 	});
+// }

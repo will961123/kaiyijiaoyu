@@ -6,7 +6,7 @@
 				<view class="tit textov1">{{ item.title }}</view>
 				<view class="info flex justify-between align-center">
 					<view class="name">主讲人: {{ item.author }}</view>
-					<view class="time">{{ item.updateTime }}</view>
+					<view class="time">{{ item.publishedTime }}</view>
 				</view>
 				<view class="numBox flex  justify-between align-center">
 					<view class="see">

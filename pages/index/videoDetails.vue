@@ -34,8 +34,10 @@
 					</view>
 
 					<button @click="changeVideo(1, index)" v-if="item.isFree === 1" class="cu-btn btn bg-gradual-blue">免费</button>
-					<button v-else-if="item.isFree === 0 && item.categoryId !== 51" @click="navgater('/pages/index/openVip')" class="cu-btn btn bg-gradual-blue  ">购买vip</button>
-					<button @click="changeVideo(2, index)" v-if="item.isFree === 0 && item.categoryId === 51" class="cu-btn btn bg-gradual-blue  ">已购买</button>
+					<button v-else-if="item.isFree === 0 && !item.alreadyPayVip" @click="navgater('/pages/index/openVip')" class="cu-btn btn bg-gradual-blue  ">购买vip</button>
+					<button @click="changeVideo(2, index)" v-if="item.isFree === 0 && item.alreadyPayVip" class="cu-btn btn bg-gradual-blue  ">已购买</button>
+					<!-- 					<button v-else-if="item.isFree === 0 && item.categoryId !== 51" @click="navgater('/pages/index/openVip')" class="cu-btn btn bg-gradual-blue  ">购买vip</button>
+					<button @click="changeVideo(2, index)" v-if="item.isFree === 0 && item.categoryId === 51" class="cu-btn btn bg-gradual-blue  ">已购买</button> -->
 				</view>
 			</view>
 			<view v-show="titIdx === 1" class="contentBox">
@@ -57,13 +59,18 @@ export default {
 			videoInfo: {},
 			page: 1,
 			hasNext: true,
-			videoContext: null
+			videoContext: null,
+			userInfo: {}
 		};
 	},
 	onLoad(options) {
 		if (options.id) {
 			this.id = options.id;
 			this.getDetail();
+		}else{
+			uni.reLaunch({
+				url:'/pages/index/index'
+			})
 		}
 	},
 	onReachBottom() {
@@ -75,16 +82,38 @@ export default {
 	onReady() {
 		this.videoContext = uni.createVideoContext('myVideo');
 	},
+	onShow() {
+		let userInfo = uni.getStorageSync('userInfo') || '';
+		if (!userInfo) {
+			this.getUserInfo();
+		} else {
+			this.userInfo = userInfo;
+			console.log(userInfo);
+		}
+	},
 	methods: {
+		getUserInfo() {
+			this.request({
+				url: '/app/web/support/token',
+				method: 'POST',
+				success: res => {
+					console.log('userInfo', res);
+					if (res.data.code === 200) {
+						uni.setStorageSync('userInfo', res.data.data);
+						this.userInfo = res.data.data;
+					}
+				}
+			});
+		},
 		handlerVideoPlay() {
 			if (this.videoInfo.isFree === 0 && this.videoInfo.categoryId !== 51) {
 				this.videoContext.pause();
 				this.videoContext.seek(0);
 				uni.showModal({
-					title:'提示',
-					content:'请开通会员!',
-					showCancel:false
-				})
+					title: '提示',
+					content: '请开通会员!',
+					showCancel: false
+				});
 			}
 		},
 		// 1免费 2已购买
@@ -105,7 +134,8 @@ export default {
 				videoUri: this.videoInfo.videoUri
 			};
 			if (type) {
-				url = '/app/web/customer/favorites/delete';
+				url = '/app/web/customer/favorites/cancel';
+				// formDate = {};
 				formDate = [this.videoInfo.id];
 			}
 			this.request({
@@ -142,8 +172,17 @@ export default {
 					uni.hideLoading();
 					console.log('videoDetail', res.data.data);
 					if (res.data.code === 200) {
-						this.videoInfo = res.data.data;
 						this.categoryId = res.data.data.categoryId;
+						res.data.data.alreadyPayVip = false;
+						if (this.userInfo.vips.length > 0) {
+							for (let vipidx in this.userInfo.vips) {
+								if (this.userInfo.vips[vipidx].categoryId === Number(this.categoryId)) {
+									res.data.data.alreadyPayVip = true;
+								}
+							}
+						}
+						this.videoInfo = res.data.data;
+
 						this.list = [];
 						this.page = 1;
 						this.hasNext = true;
@@ -169,11 +208,21 @@ export default {
 						this.page++;
 						this.hasNext = res.data.data.hasNext;
 						this.list.push(...res.data.data.data);
-						for (let idx in this.list) {
-							if (this.list[idx].id == this.id) {
+						let list = this.list;
+						for (let idx in list) {
+							if (list[idx].id == this.id) {
 								this.nowIdx = Number(idx);
 							}
+							list[idx].alreadyPayVip = false;
+							if (this.userInfo.vips.length > 0) {
+								for (let vipidx in this.userInfo.vips) {
+									if (this.userInfo.vips[vipidx].categoryId === Number(this.categoryId)) {
+										list[idx].alreadyPayVip = true;
+									}
+								}
+							}
 						}
+						this.list = list;
 					}
 				}
 			});

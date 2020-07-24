@@ -85,17 +85,30 @@ export default {
 		this.checkLogin().then(
 			success => {},
 			error => {
-				console.log('获取新token');
-				this.loginGetToken();
+				let urltoken = this.getQueryString('token');
+				if (!urltoken) {
+					console.log('获取新token');
+					this.loginGetToken();
+				}else{
+					// uni.setStorageSync('token',urltoken)
+				}
 			}
 		);
 	},
 	onLoad() {
+		this.tryGetParent();
 		this.getBannerList();
 		this.getFreeList();
 		this.getAd();
 		this.getLatestList();
-		this.getKaiyiList();
+		this.getKaiyiList(); 
+
+		let token = this.getQueryString('token');
+		if (token) {
+			uni.setStorageSync('token', token);
+			this.getUserInfo();
+			this.tryGetParent();
+		}
 	},
 	onReachBottom() {
 		if (this.hasNext) {
@@ -103,20 +116,68 @@ export default {
 		}
 	},
 	methods: {
+		tryGetParent() {
+			let parentId = this.getQueryString('parentId');
+			if (parentId) {
+				uni.setStorageSync('parentId', parentId);
+				this.loginGetToken();
+			}
+			console.log('尝试获取parentId', parentId);
+		},
+		bindParent(pid) {
+			if (!uni.getStorageSync('token')) {
+				return;
+			}
+			this.request({
+				url: '/app/web/support/bind/' + pid,
+				method: 'POST',
+				success: res => {
+					console.log('绑定上下级', res);
+					if (res.data.code === 200) {
+						uni.removeStorageSync('parentId');
+					}
+				}
+			});
+		},
 		loginGetToken() {
+			// this.request({
+			// 	url: '/app/web/support/oauth/login',
+			// 	data: { state: 'https://h5.kaiyi999.com/#/' },
+			// 	success: res => {
+			// 		console.log('getToken', res);
+			// 		if (res.data.code === 200) {
+			// 			window.location.href = res.data.data;
+			// 		}
+			// 	}
+			// });
 			this.request({
 				url: '/app/web/support/oauth/1',
-				// url: '/app/web/support/virtual/login',
 				method: 'POST',
 				success: res => {
 					console.log('getToken', res);
 					if (res.data.code === 200) {
 						uni.setStorageSync('token', res.data.data);
+						let parentId = uni.getStorageSync('parentId')
+						if(parentId){
+							this.bindParent(parentId)
+						}
+						this.getUserInfo();
 					}
 				}
 			});
 		},
-
+		getUserInfo() {
+			this.request({
+				url: '/app/web/support/token',
+				method: 'POST',
+				success: res => {
+					console.log('userInfo', res);
+					if (res.data.code === 200) {
+						uni.setStorageSync('userInfo', res.data.data);
+					}
+				}
+			});
+		},
 		getKaiyiList() {
 			this.showLoading();
 			this.request({

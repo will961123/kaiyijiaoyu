@@ -3,8 +3,8 @@
 		<view class="topInfo bg-gradual-purple">
 			<view class="headBox flex align-center justify-between">
 				<view class="flex align-center text-sm">
-					<image :src="userInfo.img" mode="aspectFill"></image>
-					<view class="lv">{{ userInfo.name }} {{ userInfo.lv }}</view>
+					<image :src="userInfo.customer.headimgurl" mode="aspectFill"></image>
+					<view class="lv">{{ userInfo.customer.nickName }} <text style="margin-left: 8rpx;" v-if="userInfo.vips" v-for="(item, index) in userInfo.vips" :key="index"> {{ item.name }}</text></view>
 				</view>
 				<navigator url="/pages/index/openVip" class="btn cu-btn bg-gradual-blue">
 					<text class="cuIcon cuIcon-vip"></text>
@@ -31,10 +31,10 @@
 			</view>
 		</view>
 		<view v-for="(item, index) in list[titidx]" :key="index" class="item bg-white flex align-center">
-			<image :src="item.img" mode="aspectFill"></image>
+			<image :src="item.headimgurl" mode="aspectFill"></image>
 			<view class="infoBox">
-				<view class="name">{{ item.name }}</view>
-				<view class="time">邀请日期：{{ item.time }}</view>
+				<view class="name">{{ item.nickName }}</view>
+				<view class="time">邀请日期：{{ item.subscribeTime }}</view>
 			</view>
 		</view>
 
@@ -48,17 +48,22 @@
 export default {
 	data() {
 		return {
-			userInfo: {
-				img: '/static/logo.png',
-				name: '歪比',
-				lv: '管理力篇'
-			},
+			userInfo: { },
 			totMoney: 0,
 			titidx: 0, // 1会员 0免费
 			list: [[], []],
 			page: [1, 1],
 			hasNext: [true, true]
 		};
+	},
+	onShow() {
+		let userInfo = uni.getStorageSync('userInfo') || '';
+		if (!userInfo) {
+			this.getUserInfo();
+		} else {
+			this.userInfo = userInfo;
+			console.log(userInfo);
+		}
 	},
 	onLoad() {
 		this.getTotMoney();
@@ -76,12 +81,25 @@ export default {
 		}
 	},
 	methods: {
+		getUserInfo() {
+			this.request({
+				url: '/app/web/support/token',
+				method: 'POST',
+				success: res => {
+					console.log('userInfo', res);
+					if (res.data.code === 200) {
+						uni.setStorageSync('userInfo', res.data.data);
+						this.userInfo = res.data.data;
+					}
+				}
+			});
+		},
 		changeTitIdx(type) {
 			if (this.titidx === type) {
 				return false;
 			}
 			this.titidx = type;
-			this.getList(this.titidx);
+			// this.getList(this.titidx);
 		},
 		getList(type) {
 			this.showLoading();

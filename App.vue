@@ -2,11 +2,20 @@
 export default {
 	onLaunch: function() {
 		console.log('App Launch');
-		this.checkLogin().then(success=>{},error=>{
-			uni.reLaunch({
-				url:'/pages/index/index'
-			})
-		})
+		this.checkLogin().then(
+			success => {},
+			error => {
+				let urltoken = this.getQueryString('token');
+				if (!urltoken) {
+					uni.clearStorage('userInfo');
+					uni.reLaunch({
+						url: '/pages/index/index'
+					});
+				}else{
+					uni.setStorageSync('token',urltoken)
+				}
+			}
+		);
 	},
 	onShow: function() {
 		console.log('App Show');
@@ -21,7 +30,7 @@ export default {
 /*每个页面公共css */
 @import 'colorui/main.css';
 @import 'colorui/icon.css';
-.textov1 { 
+.textov1 {
 	/* display: block; */
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -34,13 +43,13 @@ export default {
 	-webkit-line-clamp: 2;
 	-webkit-box-orient: vertical;
 }
-.endBox{
+.endBox {
 	text-align: center;
 	font-size: 22rpx;
 	color: #999;
 	line-height: 40px;
 }
-image{ 
+image {
 	/* background-color: #ededed; */
 }
 </style>

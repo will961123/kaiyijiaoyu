@@ -72,6 +72,7 @@
 	},
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
+		"navigationStyle":"custom",
 		"navigationBarTitleText": "凯一学院",
 		"navigationBarBackgroundColor": "#F8F8F8",
 		"backgroundColor": "#F8F8F8"

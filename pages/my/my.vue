@@ -1,11 +1,14 @@
 <template>
 	<view class="myView bg-white">
 		<view class="topInfo bg-gradual-blue">
-			<view class="headBox flex">
-				<image :src="userInfo.img" mode="aspectFill"></image>
+			<view class="headBox flex align-center">
+				<image :src="userInfo.customer.headimgurl" mode="aspectFill"></image>
 				<view class="info">
-					<view class="name">昵称: {{ userInfo.name }}</view>
-					<view class="lv">会员等级: {{ userInfo.lv }}</view>
+					<view class="name">昵称: {{ userInfo.customer.nickName }}</view>
+					<view class="lv">
+						会员等级:
+						<text style="margin-left: 8rpx;" v-if="userInfo.vips" v-for="(item, index) in userInfo.vips" :key="index">{{ item.name }}</text>
+					</view>
 				</view>
 			</view>
 		</view>
@@ -19,8 +22,11 @@
 
 		<view class="endBox">{{ supportStr }}</view>
 
-		<view  v-if="showPoster" @click.self="showPoster = false" class="mc">
-			<view @click.stop="" class="mcContent"><image :src="imgUrl + poster" mode="widthFix"></image></view>
+		<view v-if="showPoster" @click.self="showPoster = false" class="mc">
+			<view @click.stop="" class="mcContent text-white">
+				<text @click="showPoster=false" class="cuIcon cuIcon-roundclosefill"></text>
+				<image :src="imgUrl + poster" mode="aspectFill"></image>
+			</view>
 		</view>
 	</view>
 </template>
@@ -31,11 +37,6 @@ export default {
 		return {
 			supportStr: '',
 			phone: '',
-			userInfo: {
-				img: '/static/logo.png',
-				name: '歪比',
-				lv: '管理力篇'
-			},
 			navgaterList: [
 				{
 					pic: '/static/my1.png',
@@ -69,14 +70,37 @@ export default {
 				}
 			],
 			poster: '2157CB76554000E49EC09FC2E83E4D2A.jpeg',
-			showPoster: false
+			showPoster: false,
+			userInfo: {}
 		};
+	},
+	onShow() {
+		let userInfo = uni.getStorageSync('userInfo') || '';
+		if (!userInfo) {
+			this.getUserInfo();
+		} else {
+			this.userInfo = userInfo;
+			console.log(userInfo);
+		}
 	},
 	onLoad() {
 		this.getSupport();
 		this.getPhone();
 	},
 	methods: {
+		getUserInfo() {
+			this.request({
+				url: '/app/web/support/token',
+				method: 'POST',
+				success: res => {
+					console.log('userInfo', res);
+					if (res.data.code === 200) {
+						uni.setStorageSync('userInfo', res.data.data);
+						this.userInfo = res.data.data;
+					}
+				}
+			});
+		},
 		getPhone() {
 			this.request({
 				url: '/app/web/common/contact/phone',
@@ -147,9 +171,17 @@ page {
 	.mcContent {
 		// width: calc(100% - 60rpx);
 		width: 100%;
+		height: 100%;
+		.cuIcon {
+			position: absolute;
+			right: 20rpx;
+			top: 10px;
+			z-index: 999;
+			font-size: 40rpx;
+		}
 		image {
 			width: 100%;
-			max-height: 100%;
+			height: 100%;
 		}
 	}
 }
