@@ -10,6 +10,7 @@
 			:key="index"
 			:class="index === 0 ? 'bg-black' : index === 1 ? 'bg-yellow' : index === 2 ? 'bg-orange' : 'bg-cyan'"
 			class=" item flex align-center justify-between "
+			@click="item.select = !item.select"
 		>
 			<view class="flex flex-direction justify-between">
 				<view class="name text-bold">
@@ -19,7 +20,7 @@
 				</view>
 				<view class="desc">{{ item.note }}</view>
 			</view>
-			<label @click="checkedIdx = index" class="radio"><radio :checked="checkedIdx === index" style="transform: scale(.8);" color="red" value="" /></label>
+			<label class="radio"><radio :checked="item.select" style="transform: scale(.8);" color="red" value="" /></label>
 		</view>
 
 		<button @click="createOrder" class="btn cu-btn bg-gradual-blue">立即支付</button>
@@ -30,7 +31,6 @@
 export default {
 	data() {
 		return {
-			checkedIdx: -1,
 			list: [],
 			userInfo: {}
 		};
@@ -67,7 +67,13 @@ export default {
 			});
 		},
 		createOrder() {
-			if (this.checkedIdx < 0) {
+			let ids = [];
+			for (let idx in this.list) {
+				if (this.list[idx].select) {
+					ids.push(this.list[idx].id);
+				}
+			} 
+			if (ids.length == 0) {
 				uni.showModal({
 					title: '提示',
 					content: '请选择会员!',
@@ -75,9 +81,20 @@ export default {
 				});
 				return false;
 			}
-			let formData = {
-				vipIds: [this.list[this.checkedIdx].id]
-			};
+			let formData = { 
+				vipIds: ids
+			}; 
+			// if (this.checkedIdx < 0) {
+			// 	uni.showModal({
+			// 		title: '提示',
+			// 		content: '请选择会员!',
+			// 		showCancel: false
+			// 	});
+			// 	return false;
+			// }
+			// let formData = {
+			// 	vipIds: [this.list[this.checkedIdx].id]
+			// };
 			this.showLoading();
 			this.request({
 				url: '/app/web/customer/order/add',
@@ -109,7 +126,7 @@ export default {
 					appId: config.appid, //公众号名称，由商户传入
 					timeStamp: config.timeStamp, //时间戳，自1970年以来的秒数
 					nonceStr: config.nonceStr, //随机串
-					package: 'prepay_id=' + config.paySign,
+					package: 'prepay_id=' + config.prepayId,
 					signType: config.signType, //微信签名方式：
 					paySign: config.paySign //微信签名
 				},
@@ -120,7 +137,7 @@ export default {
 							title: '提示!',
 							content: '支付成功!',
 							showCancel: false
-						}); 
+						});
 						that.getUserInfo();
 						console.log('支付成功了');
 					} else if (res.err_msg == 'get_brand_wcpay_request:cancel') {
@@ -143,7 +160,8 @@ export default {
 							content: '支付失败!',
 							showCancel: false
 						});
-						console.log('支付失败');
+						console.log('支付失败',res);
+						alert(res.errMsg||res.err_msg)
 					}
 				}
 			);
@@ -204,6 +222,10 @@ export default {
 								}
 							}
 						}
+						res.data.data = res.data.data.map(i => {
+							i.select = false;
+							return i;
+						});
 						this.list = res.data.data;
 					}
 				}

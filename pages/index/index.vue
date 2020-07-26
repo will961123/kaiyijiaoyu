@@ -1,14 +1,8 @@
 <template>
 	<view class="indexView">
-		<swiper class="sw" :indicator-dots="true" :autoplay="true">
-			<swiper-item
-				@click="navgater(item.type === 2 ? '/pages/index/openVip' : '/pages/index/videoDetails?id=' + item.categoryId)"
-				v-for="(item, index) in bannerList"
-				:key="index"
-			>
-				<!-- :style="{backgroundImage:'url('+imgUrl + item.uri+')'}" -->
-				<image :src="imgUrl + item.uri" mode="widthFix"></image>
-			</swiper-item>
+		<swiper class="sw" :indicator-dots="true" :circular="true" :autoplay="true">
+			<!-- 	@click="navgater(item.type === 2 ? '/pages/index/openVip' : '/pages/index/videoDetails?id=' + item.categoryId)" -->
+			<swiper-item @click="bannerClick(item)" v-for="(item, index) in bannerList" :key="index"><image :src="item.uri" mode="scaleToFill"></image></swiper-item>
 		</swiper>
 
 		<view class="navList bg-white flex align-center justify-around ">
@@ -33,7 +27,7 @@
 		<view class="section latestCourses bg-white">
 			<view class="title">最新课程</view>
 			<view @click="navgater('/pages/index/videoDetails?id=' + item.id)" v-for="(item, index) in latestCourses" :key="index" class="item flex">
-				<image :src="imgUrl + item.coverUri" mode="aspectFill"></image>
+				<image :src="imgUrl + item.coverUri" mode="widthFix"></image>
 				<view class="infoBox flex flex-direction justify-between">
 					<view class="tit textov1">{{ item.title }}</view>
 					<view class="info flex justify-between align-center">
@@ -47,7 +41,7 @@
 		<view class="section latestCourses bg-white">
 			<view class="title">凯一专栏</view>
 			<view @click="navgater('/pages/index/videoDetails?id=' + item.id)" v-for="(item, index) in kaiyiList" :key="index" class="item flex">
-				<image :src="imgUrl + item.coverUri" mode="aspectFill"></image>
+				<image :src="imgUrl + item.coverUri" mode="widthFix"></image>
 				<view class="infoBox flex flex-direction justify-between">
 					<view class="tit textov1">{{ item.title }}</view>
 					<view class="info flex justify-between align-center">
@@ -87,10 +81,13 @@ export default {
 			error => {
 				let urltoken = this.getQueryString('token');
 				if (!urltoken) {
-					console.log('获取新token');
+					console.log('需要获取新token');
 					this.loginGetToken();
-				}else{
-					// uni.setStorageSync('token',urltoken)
+				} else {
+					console.log('onshow获取到url token', urltoken);
+					uni.setStorageSync('token', urltoken);
+					// this.tryGetParent();
+					window.location.href = this.redirectUrl;
 				}
 			}
 		);
@@ -105,7 +102,11 @@ export default {
 
 		let token = this.getQueryString('token');
 		if (token) {
+			console.log('onload获取到url token', token);
 			uni.setStorageSync('token', token);
+			window.location.href = this.redirectUrl;
+		} else if (uni.getStorageSync('token')) {
+			console.log('onload缓存获取到 token', token);
 			this.getUserInfo();
 			this.tryGetParent();
 		}
@@ -115,14 +116,18 @@ export default {
 			this.getKaiyiList();
 		}
 	},
-	methods: {
+	methods: { 
 		tryGetParent() {
-			let parentId = this.getQueryString('parentId');
+			let parentId = this.getQueryString('parentId') || '';
 			if (parentId) {
 				uni.setStorageSync('parentId', parentId);
-				this.loginGetToken();
+			} 
+			console.log('尝试url获取parentId', parentId);
+			let sparentId = uni.getStorageSync('parentId') || '';
+			if (sparentId) {
+				this.bindParent(sparentId);
 			}
-			console.log('尝试获取parentId', parentId);
+			console.log('尝试缓存获取parentId', sparentId);
 		},
 		bindParent(pid) {
 			if (!uni.getStorageSync('token')) {
@@ -140,31 +145,31 @@ export default {
 			});
 		},
 		loginGetToken() {
-			// this.request({
-			// 	url: '/app/web/support/oauth/login',
-			// 	data: { state: 'https://h5.kaiyi999.com/#/' },
-			// 	success: res => {
-			// 		console.log('getToken', res);
-			// 		if (res.data.code === 200) {
-			// 			window.location.href = res.data.data;
-			// 		}
-			// 	}
-			// });
 			this.request({
-				url: '/app/web/support/oauth/1',
-				method: 'POST',
+				url: '/app/web/support/oauth/login',
+				data: { state: this.redirectUrl },
 				success: res => {
-					console.log('getToken', res);
+					console.log('getToken', res); 
 					if (res.data.code === 200) {
-						uni.setStorageSync('token', res.data.data);
-						let parentId = uni.getStorageSync('parentId')
-						if(parentId){
-							this.bindParent(parentId)
-						}
-						this.getUserInfo();
+						window.location.href = res.data.data;
 					}
 				}
 			});
+			// this.request({
+			// 	url: '/app/web/support/oauth/2',
+			// 	method: 'POST',
+			// 	success: res => {
+			// 		console.log('getToken', res);
+			// 		if (res.data.code === 200) {
+			// 			uni.setStorageSync('token', res.data.data);
+			// 			let parentId = uni.getStorageSync('parentId');
+			// 			if (parentId) {
+			// 				this.bindParent(parentId);
+			// 			}
+			// 			this.getUserInfo();
+			// 		}
+			// 	}
+			// });
 		},
 		getUserInfo() {
 			this.request({
@@ -242,10 +247,22 @@ export default {
 				success: res => {
 					console.log('banner', res);
 					if (res.data.code === 200) {
+						res.data.data = res.data.data.map(i => {
+							i.uri = this.imgUrl + i.uri;
+							return i;
+						});
 						this.bannerList = res.data.data;
 					}
 				}
 			});
+		},
+		bannerClick(item) {
+			if (item.categoryId == 0) {
+				this.navgater('/pages/index/openVip');
+			} else if (item.categoryId > 0) {
+				// this.navgater('/pages/index/videoDetails?id=' + item.categoryId);
+				this.navgater('/pages/index/coursesList?id=' + item.categoryId);
+			}
 		},
 		navgater(path) {
 			uni.navigateTo({
@@ -260,16 +277,17 @@ export default {
 .indexView {
 	background-color: #f1f1f1;
 	.sw {
-		height: 300rpx;
+		height: 150px;
 		swiper-item {
 			width: 100%;
+			// height: 300px;
 			height: 100%;
 			background-repeat: no-repeat;
 			background-size: cover;
 			background-position: bottom;
 			image {
 				width: 100%;
-				// height: 100%;
+				height: 100%;
 			}
 		}
 	}
@@ -339,14 +357,14 @@ export default {
 		.item {
 			padding: 10px 0;
 			& > image {
-				width: 200rpx;
-				height: 180rpx;
+				width: 240rpx;
+				height: 160rpx;
 				border-radius: 15rpx;
 				margin-right: 18rpx;
 			}
 			.infoBox {
 				// flex: 1;
-				width: calc(100% - 218rpx);
+				width: calc(100% - 258rpx);
 				.tit {
 					width: 100%;
 					font-weight: 700;

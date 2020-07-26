@@ -6,13 +6,17 @@ export default {
 			success => {},
 			error => {
 				let urltoken = this.getQueryString('token');
+				let parentId = this.getQueryString('parentId') ||'';
+				if(parentId){
+					uni.setStorageSync('parentId',parentId)
+				}
 				if (!urltoken) {
 					uni.clearStorage('userInfo');
 					uni.reLaunch({
 						url: '/pages/index/index'
 					});
-				}else{
-					uni.setStorageSync('token',urltoken)
+				} else {
+					uni.setStorageSync('token', urltoken);
 				}
 			}
 		);
@@ -48,6 +52,9 @@ export default {
 	font-size: 22rpx;
 	color: #999;
 	line-height: 40px;
+}
+.bg-blue {
+	background-color: #439387;
 }
 image {
 	/* background-color: #ededed; */

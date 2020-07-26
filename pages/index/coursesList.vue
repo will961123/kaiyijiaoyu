@@ -81,14 +81,14 @@ export default {
 	.item {
 		padding: 10px 0;
 		& > image {
-			width: 200rpx;
-			height: 180rpx;
+			width: 240rpx;
+			height: 160rpx;
 			border-radius: 15rpx;
 			margin-right: 18rpx;
 		}
 		.infoBox {
 			// flex: 1;
-			width: calc(100% - 218rpx);
+			width: calc(100% - 258rpx);
 			.tit {
 				width: 100%;
 				font-weight: 700;

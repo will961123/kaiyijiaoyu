@@ -24,8 +24,8 @@
 
 		<view v-if="showPoster" @click.self="showPoster = false" class="mc">
 			<view @click.stop="" class="mcContent text-white">
-				<text @click="showPoster=false" class="cuIcon cuIcon-roundclosefill"></text>
-				<image :src="imgUrl + poster" mode="aspectFill"></image>
+				<text @click="showPoster = false" class="cuIcon cuIcon-roundclosefill"></text>
+				<image :src="imgUrl + poster" mode="widthFix"></image>
 			</view>
 		</view>
 	</view>
@@ -69,7 +69,7 @@ export default {
 					path: ''
 				}
 			],
-			poster: '2157CB76554000E49EC09FC2E83E4D2A.jpeg',
+			poster: '',
 			showPoster: false,
 			userInfo: {}
 		};
@@ -125,11 +125,27 @@ export default {
 				}
 			});
 		},
+		getPoster() {
+			this.showLoading()
+			this.request({
+				url: '/app/web/support/qrcode',
+				success: res => {
+					uni.hideLoading()
+					console.log('获取海报', res);
+					if (res.data.code === 200) {
+						this.poster =   res.data.data;
+						this.showPoster = true
+					}
+				}
+			});
+		},
 		hanlderClick(idx) {
 			if (idx === 3) {
 				if (this.poster) {
 					this.showPoster = true;
 					return false;
+				}else{
+					this.getPoster()
 				}
 			} else if (idx === 5) {
 				uni.showActionSheet({

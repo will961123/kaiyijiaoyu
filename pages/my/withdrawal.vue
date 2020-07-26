@@ -122,6 +122,12 @@ export default {
 								})
 							}
 						})
+					}else{
+						uni.showModal({
+							title:'提示',
+							content:'提现失败!',
+							showCancel:false 
+						})
 					}
 				}
 			});

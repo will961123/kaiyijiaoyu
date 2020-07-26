@@ -138,8 +138,8 @@ export default {
 			margin-right: 15rpx;
 		}
 		& > image {
-			width: 180rpx;
-			height: 140rpx;
+			width: 240rpx;
+			height: 160rpx;
 		}
 		.infoBox {
 			flex: 1;

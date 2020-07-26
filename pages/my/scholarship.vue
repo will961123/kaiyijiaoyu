@@ -22,12 +22,12 @@
 			<view @click="changeTitIdx(0)" :class="{ select: titidx === 0 }" class="item">
 				已邀请
 				<text class="text-blue">普通</text>
-				会员:{{list[0].length}}
+				会员:{{totalCount[0]}}
 			</view>
 			<view @click="changeTitIdx(1)" :class="{ select: titidx === 1 }" class="item">
 				已邀请
 				<text class="text-blue">VIP</text>
-				会员:{{list[1].length}}
+				会员:{{totalCount[1]}}
 			</view>
 		</view>
 		<view v-for="(item, index) in list[titidx]" :key="index" class="item bg-white flex align-center">
@@ -40,7 +40,14 @@
 
 		<will-nodata v-if="list[titidx].length === 0" tittle="暂无数据!"></will-nodata>
 
-		<view class="invitation btn cu-btn bg-gradual-blue">邀请学员</view>
+		<view @click="getPoster" class="invitation btn cu-btn bg-gradual-blue">邀请学员</view>
+		
+		<view v-if="showPoster" @click.self="showPoster = false" class="mc">
+			<view @click.stop="" class="mcContent text-white">
+				<text @click="showPoster = false" class="cuIcon cuIcon-roundclosefill"></text>
+				<image :src="imgUrl + poster" mode="widthFix"></image>
+			</view>
+		</view>
 	</view>
 </template>
 
@@ -53,7 +60,10 @@ export default {
 			titidx: 0, // 1会员 0免费
 			list: [[], []],
 			page: [1, 1],
-			hasNext: [true, true]
+			totalCount:[0,0],
+			hasNext: [true, true],
+			poster: '',
+			showPoster: false,
 		};
 	},
 	onShow() {
@@ -81,6 +91,20 @@ export default {
 		}
 	},
 	methods: {
+		getPoster() {
+			this.showLoading()
+			this.request({
+				url: '/app/web/support/qrcode',
+				success: res => {
+					uni.hideLoading()
+					console.log('获取海报', res);
+					if (res.data.code === 200) {
+						this.poster =   res.data.data;
+						this.showPoster = true
+					}
+				}
+			});
+		},
 		getUserInfo() {
 			this.request({
 				url: '/app/web/support/token',
@@ -115,6 +139,7 @@ export default {
 					uni.hideLoading();
 					console.log('list', res.data.data);
 					if (res.data.code === 200) {
+						this.totalCount[type] = res.data.data.totalCount||0
 						this.page[type]++;
 						this.hasNext[type] = res.data.data.hasNext;
 						this.list[type].push(...res.data.data.data);
@@ -144,6 +169,31 @@ export default {
 page {
 	background-color: #fff;
 }
+	.mc {
+		position: fixed;
+		left: 0;
+		top: 0;
+		width: 100%;
+		height: 100vh;
+		background-color: rgba(0, 0, 0, 0.3);
+		padding: 20px 30rpx;
+		.mcContent {
+			// width: calc(100% - 60rpx);
+			width: 100%;
+			height: 100%;
+			.cuIcon {
+				position: absolute;
+				right: 20rpx;
+				top: 10px;
+				z-index: 999;
+				font-size: 40rpx;
+			}
+			image {
+				width: 100%;
+				height: 100%;
+			}
+		}
+	}
 .scholarshipView {
 	padding-bottom: 40px;
 	.topInfo {

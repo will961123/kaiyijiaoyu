@@ -17,9 +17,9 @@
 					<view class="time">下单时间：{{ goods.createTime }}</view>
 					<view class="time" v-if="item.payTime">支付时间：{{ item.payTime }}</view>
 				</view>
-				<view class="btnBox">
+				<view class="btnBox text-right">
 					<view class="money">{{ goods.price | filterMoney }}</view>
-					<view @click="getWxPayConfig(item.order.id)" v-if="!item.payTime && idx == item.items.length - 1" class="btn bg-gradual-blue cu-btn">立即支付</view>
+					<view @click="getWxPayConfig(item.order.id)" v-if="!item.payTime && idx == item.items.length - 1" class="btn bg-blue cu-btn">立即支付</view>
 					<view v-if="item.payTime" class="type text-red">已支付</view>
 				</view>
 			</view>
@@ -73,7 +73,7 @@ export default {
 					appId: config.appid, //公众号名称，由商户传入
 					timeStamp: config.timeStamp, //时间戳，自1970年以来的秒数
 					nonceStr: config.nonceStr, //随机串
-					package: 'prepay_id=' + config.paySign,
+					package: 'prepay_id=' + config.prepayId,
 					signType: config.signType, //微信签名方式：
 					paySign: config.paySign //微信签名
 				},

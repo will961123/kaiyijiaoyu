@@ -3,11 +3,11 @@
 		<view class="iptBox flex align-center">
 			<input v-model="searchStr" type="text" value="" placeholder="搜索课程" />
 			<text class="cuIcon cuIcon-search"></text>
-			<button @click="search" class="cu-btn btn bg-gradual-blue">搜索</button>
+			<button @click="search" class="cu-btn btn bg-blue">搜索</button>
 		</view>
 
 		<view @click="navgater('/pages/index/videoDetails?id=' + item.videoId)" v-for="(item, index) in latestCourses" :key="index" class="item flex">
-			<image :src="imgUrl + item.coverUri" mode="aspectFill"></image>
+			<image :src="imgUrl + item.coverUri" mode="widthFix"></image>
 			<view class="infoBox flex flex-direction justify-around ">
 				<view class="tit">{{ item.name }}</view>
 				<view class="info flex justify-between align-center">
@@ -26,6 +26,8 @@
 				</view>
 			</view>
 		</view>
+		
+		<will-nodata v-if="latestCourses.length==0" title="暂无数据!" ></will-nodata>
 	</view>
 </template>
 
@@ -88,11 +90,14 @@ export default {
 </script>
 
 <style lang="scss">
+	page{
+		background-color: #fff;
+	}
 .learningRecordView {
 	padding: 0 30rpx;
 	padding-top: 14px;
 	.iptBox {
-		border: 1px solid #15adc6;
+		border: 1px solid #439387;
 		border-radius: 15rpx;
 		overflow: hidden;
 		margin-bottom: 14px;
@@ -115,8 +120,8 @@ export default {
 	.item {
 		padding: 10px 0;
 		& > image {
-			width: 200rpx;
-			height: 180rpx;
+			width: 240rpx;
+			height: 160rpx;
 			border-radius: 15rpx;
 			margin-right: 18rpx;
 		}

@@ -55,9 +55,10 @@ Vue.prototype.request = function(obj) {
 					icon: 'none',
 					mask: true
 				})
-				uni.reLaunch({
-					url: '/pages/index/index'
-				})
+				window.location.href = this.redirectUrl
+				// uni.reLaunch({
+				// 	url: '/pages/index/index'
+				// })
 			}
 			typeof obj.success == "function" && obj.success(res)
 		},
@@ -112,30 +113,36 @@ Vue.prototype.getQueryString = function(name) {
 }
 
 
-// Vue.prototype.wx = require('jweixin-module');
-// Vue.prototype.wxSdk = function(obj) {
-// 	var that = this;
-// 	this.request({
-// 		url: '/appwx/getConfig',
-// 		data: {
-// 			url: obj.pageUrl
-// 		},
-// 		success: res => {
-// 			var json = JSON.parse(res.data.obj);
-// 			console.log("wx配置", json)
-// 			var config = {};
-// 			config.debug = false;
-// 			config.appId = json.appId;
-// 			config.timestamp = json.timestamp;
-// 			config.nonceStr = json.nonceStr;
-// 			config.signature = json.signature;
-// 			config.jsApiList = json.jsApiList || [];
-// 			config.jsApiList.push('getLocalImgData');
-// 			this.wx.config(config);
-// 			this.wx.ready(function() {
-// 				typeof obj.success == "function" && obj.success(res)
-// 			});
-// 		},
-// 		fail: res => {}
-// 	});
-// }
+Vue.prototype.wx = require('jweixin-module');
+Vue.prototype.wxSdk = function(obj) {
+	var that = this;
+	this.request({
+		url: '/app/web/support/jsconfig',
+		data: {
+			url: obj.pageUrl
+		},
+		success: res => {
+			var json = res.data.data;
+			// var json = JSON.parse(res.data.obj);
+			console.log("服务器获取到的wx配置", json)
+			var config = {};
+			config.debug = false;
+			config.appId = json.appId;
+			config.timestamp = json.timesTamp;
+			config.nonceStr = json.nonceStr;
+			config.signature = json.signature;
+			config.jsApiList = [
+				'onMenuShareAppMessage', //分享到朋友圈
+				'onMenuShareTimeline', //分享 给朋友
+			];
+			this.wx.config(config);
+			console.log('传给wx的配置为:',config)
+			this.wx.ready(function() {
+				typeof obj.success == "function" && obj.success(res)
+			});
+		},
+		fail: res => {
+			alert('获取wx配置失败!')
+		}
+	});
+}
