@@ -1,6 +1,6 @@
 <template>
 	<view class="openVipView bg-white">
-		<view class="headBox">
+		<view v-if="userInfo.customer" class="headBox">
 			<image :src="userInfo.customer.headimgurl" mode="aspectFill"></image>
 			<view class="name">{{ userInfo.customer.nickName }}</view>
 		</view>
@@ -18,9 +18,10 @@
 					<text>￥{{ item.price | filterMoney }}</text>
 					<text v-if="item.alreadyPayVip" class="text-red">【已购买】</text>
 				</view>
-				<view class="desc">{{ item.note }}</view>
+				<view class="desc" >{{ item.note }}</view>
 			</view>
-			<label class="radio"><radio :checked="item.select" style="transform: scale(.8);" color="red" value="" /></label>
+			<text   :class="item.select?'radio select':'radio'" ></text>
+			<!-- <label class="radio"><radio :checked="item.select" style="transform: scale(.8);" color="red" value="" /></label> -->
 		</view>
 
 		<button @click="createOrder" class="btn cu-btn bg-gradual-blue">立即支付</button>
@@ -36,17 +37,18 @@ export default {
 		};
 	},
 	onLoad() {
-		this.getList();
-	},
-	onShow() {
 		let userInfo = uni.getStorageSync('userInfo') || '';
 		if (!userInfo) {
+			console.log('缓存没有userinfo');
 			this.getUserInfo();
 		} else {
+			console.log('缓存有userinfo');
 			this.userInfo = userInfo;
+			this.getList();
 			console.log(userInfo);
 		}
 	},
+	onShow() {},
 	filters: {
 		filterMoney(val) {
 			return (val / 100).toFixed(2);
@@ -54,14 +56,17 @@ export default {
 	},
 	methods: {
 		getUserInfo() {
+			this.showLoading();
 			this.request({
 				url: '/app/web/support/token',
 				method: 'POST',
 				success: res => {
+					uni.hideLoading();
 					console.log('userInfo', res);
 					if (res.data.code === 200) {
 						uni.setStorageSync('userInfo', res.data.data);
 						this.userInfo = res.data.data;
+						this.getList();
 					}
 				}
 			});
@@ -72,7 +77,7 @@ export default {
 				if (this.list[idx].select) {
 					ids.push(this.list[idx].id);
 				}
-			} 
+			}
 			if (ids.length == 0) {
 				uni.showModal({
 					title: '提示',
@@ -81,9 +86,9 @@ export default {
 				});
 				return false;
 			}
-			let formData = { 
+			let formData = {
 				vipIds: ids
-			}; 
+			};
 			// if (this.checkedIdx < 0) {
 			// 	uni.showModal({
 			// 		title: '提示',
@@ -160,8 +165,8 @@ export default {
 							content: '支付失败!',
 							showCancel: false
 						});
-						console.log('支付失败',res);
-						alert(res.errMsg||res.err_msg)
+						console.log('支付失败', res);
+						alert(res.errMsg || res.err_msg);
 					}
 				}
 			);
@@ -207,10 +212,12 @@ export default {
 		// 	});
 		// },
 		getList() {
+			this.showLoading();
 			this.request({
 				url: '/app/web/vip/list',
 				method: 'POST',
 				success: res => {
+					uni.hideLoading();
 					console.log('vipList', res);
 					if (res.data.code === 200) {
 						if (this.userInfo.vips.length > 0) {
@@ -272,6 +279,17 @@ export default {
 		}
 		.desc {
 			font-size: 24rpx;
+		}
+		.radio{
+			width: 18px;
+			height: 18px;
+			border-radius: 50;
+			background-color: #fff;
+			border-radius: 50%;
+			border: 1rpx solid #ededed;
+			&.select{
+				background-color: red;
+			}
 		}
 	}
 }

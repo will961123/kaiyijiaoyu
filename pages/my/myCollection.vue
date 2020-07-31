@@ -1,6 +1,6 @@
 <template>
 	<view class="myCollectionView">
-		<view class="title flex justify-between bg-gradual-blue ">
+		<view class="title flex justify-between bg-blue ">
 			<view style="flex: 1;"></view>
 			<view style="flex: 1;text-align: center;" class="tit">全部收藏</view>
 			<view style="flex: 1;text-align: right;" class="edit">

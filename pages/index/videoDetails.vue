@@ -1,7 +1,7 @@
 <template>
 	<view class="videoDetailsView bg-white">
 		<!-- <video :src="imgUrl + videoInfo.videoUri" objectFit="fill"  controls></video> -->
-		<video id="myVideo" @timeupdate="timeupdate" :src="imgUrl + videoInfo.videoUri" objectFit="fill" :poster="imgUrl + videoInfo.coverUri" controls></video>
+		<video id="myVideo" @loadedmetadata="lodeSuccess" :autoplay="true" @timeupdate="timeupdate" :src="imgUrl + videoInfo.videoUri" objectFit="fill" :poster="imgUrl + videoInfo.coverUri" controls></video>
 
 		<view class="topInfo">
 			<view class="title">{{ videoInfo.title }}</view>
@@ -28,26 +28,26 @@
 			<!-- 目录 -->
 			<view v-show="titIdx === 0" class="listBox">
 				<view v-for="(item, index) in list" :key="index" :class="{ select: nowIdx === index }" class="item   ">
-					<view @click="changeVideo(1, index)" v-if="item.isFree === 1" class="flex justify-between align-center" >
+					<view @click="changeVideo(1, index)" v-if="item.isFree === 1" class="flex justify-between align-center">
 						<view class="infoBox">
 							<view class="tit">{{ item.title }}</view>
-							<view class="time">{{ item.publishedTime }}</view>
+							<view class="time">{{ item.publishedTime.split(' ')[0] }}</view>
 						</view>
 						<button class="cu-btn btn   bg-blue">免费</button>
 					</view>
 
-					<view v-else-if="item.isFree === 0 && !item.alreadyPayVip" @click="navgater('/pages/index/openVip')" class="flex justify-between align-center" >
+					<view @click="changeVideo(3, index)" v-else-if="item.isFree === 0 && !item.alreadyPayVip" class="flex justify-between align-center">
 						<view class="infoBox">
 							<view class="tit">{{ item.title }}</view>
-							<view class="time">{{ item.publishedTime }}</view>
+							<view class="time">{{ item.publishedTime.split(' ')[0] }}</view>
 						</view>
-						<button class="cu-btn btn    bg-blue">购买vip</button>
+						<button @click.stop="navgater('/pages/index/openVip')" class="cu-btn btn    bg-blue">购买vip</button>
 					</view>
 
-					<view @click="changeVideo(2, index)" v-if="item.isFree === 0 && item.alreadyPayVip" class="flex justify-between align-center" >
+					<view @click="changeVideo(2, index)" v-if="item.isFree === 0 && item.alreadyPayVip" class="flex justify-between align-center">
 						<view class="infoBox">
 							<view class="tit">{{ item.title }}</view>
-							<view class="time">{{ item.publishedTime }}</view>
+							<view class="time">{{ item.publishedTime.split(' ')[0] }}</view>
 						</view>
 						<button class="cu-btn btn    bg-blue">已购买</button>
 					</view>
@@ -73,14 +73,30 @@ export default {
 			page: 1,
 			hasNext: true,
 			videoContext: null,
-			userInfo: {}
+			userInfo: {vips:[],customer:{}},
+
+			type: false
 		};
 	},
 	onLoad(options) {
+		let pageType = this.getQueryString('pageType') || '';
+		if (pageType) {
+			let videoId = this.getQueryString('id') || '';
+			let videoType = this.getQueryString('type') || '';
+			uni.setStorageSync('videoDetailConfig', {
+				id: videoId,
+				type: videoType || ''
+			}); 
+		}
 		if (options.id) {
 			this.id = options.id;
 			this.tryGetParent();
-			this.getDetail();
+			if (options.type) {
+				this.type = Number(options.type);
+				this.getDetail(1);
+			} else {
+				this.getDetail();
+			}
 		} else {
 			uni.reLaunch({
 				url: '/pages/index/index'
@@ -94,9 +110,10 @@ export default {
 		this.getList();
 	},
 	onReady() {
-		this.videoContext = uni.createVideoContext('myVideo');
+		this.videoContext = uni.createVideoContext('myVideo'); 
+		// this.videoContext.play()
 	},
-	onShow() {
+	onShow() { 
 		let userInfo = uni.getStorageSync('userInfo') || '';
 		if (!userInfo) {
 			this.getUserInfo();
@@ -136,7 +153,7 @@ export default {
 		// 微信分享
 		initWxConfig() {
 			// let pageUrl = 'http://h5.kaiyi999.com/';
-			let pageUrl = window.location.href + '&parentId=' + this.userInfo.customer.id;
+			let pageUrl = window.location.href + '&parentId=' + this.userInfo.customer.id+'&pageType=detail';
 			let noHashUrl = window.location.href.split('#')[0];
 			console.log(pageUrl, '***********');
 			// openid: 'oec-Ww_wKfGBX6bMT3uXgbw-j6VM',
@@ -145,8 +162,8 @@ export default {
 				success: rescus => {
 					console.log('获取sdk配置成功', rescus, pageUrl);
 					let shareData = {
-						title: '凯一学院',
-						desc: this.videoInfo.title,
+						title:this.videoInfo.title||'凯一学院',
+						desc: this.videoInfo.digest,
 						link: pageUrl,
 						imgUrl: this.imgUrl + this.videoInfo.coverUri,
 						success: res => {
@@ -191,16 +208,21 @@ export default {
 			if (now >= 60) {
 				// this.videoContext.pause();
 				// this.videoContext.seek(0);
-				this.handlerVideoPlay()
+				this.handlerVideoPlay();
 			}
+		},
+		lodeSuccess(){
+			console.log('okkk');
+			// this.videoContext.play();
 		},
 		handlerVideoPlay() {
 			if (!this.userInfo || !this.userInfo.vips) {
 				this.videoContext.pause();
 				this.videoContext.seek(0);
+				this.getUserInfo()
 				return false;
 			}
-			
+
 			let canPlay = false;
 			if (this.userInfo.vips.length > 0) {
 				for (let vipidx in this.userInfo.vips) {
@@ -214,25 +236,29 @@ export default {
 			if (this.videoInfo.isFree === 0 && !canPlay) {
 				this.videoContext.pause();
 				this.videoContext.seek(0);
-				uni.showModal({
-					title: '提示',
-					content: '请开通会员!',
-					showCancel: false,
-					success: () => {
-						uni.navigateTo({
-							url:'/pages/index/openVip'
-						})
-					}
+				this.showToast('请开通会员!')
+				uni.navigateTo({
+					url: '/pages/index/openVip'
 				});
+				// uni.showModal({
+				// 	title: '提示',
+				// 	content: '请开通会员!',
+				// 	showCancel: false,
+				// 	success: () => {
+				// 		uni.navigateTo({
+				// 			url: '/pages/index/openVip'
+				// 		});
+				// 	}
+				// });
 			}
 		},
-		// 1免费 2已购买
+		// 1免费 2已购买 3试看
 		changeVideo(type, idx) {
 			if (this.nowIdx == this.idx) {
 				return;
 			}
 			this.id = this.list[idx].id;
-			this.nowIdx = -1
+			this.nowIdx = -1;
 			this.getDetail();
 		},
 		changeLike(type) {
@@ -273,27 +299,54 @@ export default {
 				}
 			});
 		},
-		getDetail() {
+		getDetail(type) {
 			this.showLoading();
+			let url = '/app/web/video/read/' + this.id;
+			let formData = {};
+			if (type) {
+				url = '/app/web/video/page';
+				formData = {
+					categoryId:Number( this.id),
+					pageNo: 1,
+					pageSize: 10
+				};
+			}
 			this.request({
-				url: '/app/web/video/read/' + this.id,
+				url,
 				method: 'POST',
-				data: {},
+				data: formData,
 				success: res => {
 					uni.hideLoading();
 					console.log('videoDetail', res.data.data);
 					this.initWxConfig();
 					if (res.data.code === 200) {
-						this.categoryId = res.data.data.categoryId;
-						res.data.data.alreadyPayVip = false;
-						if (this.userInfo.vips.length > 0) {
-							for (let vipidx in this.userInfo.vips) {
-								if (this.userInfo.vips[vipidx].categoryId === Number(this.categoryId)) {
-									res.data.data.alreadyPayVip = true;
+						if(type){
+							let Detail = res.data.data.data[0] 
+							this.categoryId = this.id;
+							Detail.alreadyPayVip = false;
+							if (this.userInfo.vips.length > 0) {
+								for (let vipidx in this.userInfo.vips) {
+									if (this.userInfo.vips[vipidx].categoryId === Number(this.categoryId)) {
+										Detail.alreadyPayVip = true;
+									}
 								}
 							}
+							this.videoInfo = Detail;
+							this.nowIdx = 0
+						}else{
+							this.categoryId = res.data.data.categoryId;
+							res.data.data.alreadyPayVip = false;
+							if (this.userInfo.vips.length > 0) {
+								for (let vipidx in this.userInfo.vips) {
+									if (this.userInfo.vips[vipidx].categoryId === Number(this.categoryId)) {
+										res.data.data.alreadyPayVip = true;
+									}
+								}
+							}
+							this.videoInfo = res.data.data;
 						}
-						this.videoInfo = res.data.data;
+						
+						
 
 						this.list = [];
 						this.page = 1;
@@ -309,7 +362,7 @@ export default {
 				url: '/app/web/video/page',
 				method: 'POST',
 				data: {
-					categoryId: this.categoryId,
+					categoryId: Number(this.categoryId),
 					pageNo: this.page,
 					pageSize: 10
 				},

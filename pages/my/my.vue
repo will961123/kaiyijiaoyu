@@ -225,7 +225,7 @@ page {
 		height: 60px;
 		border-bottom: 1rpx solid #ededed;
 		image {
-			width: 60rpx;
+			width: 45rpx;
 			margin-right: 16rpx;
 		}
 	}

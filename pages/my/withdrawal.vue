@@ -5,7 +5,7 @@
 				<image :src="userInfo.customer.headimgurl" mode="aspectFill"></image>
 				{{ userInfo.customer.nickName }} <text style="margin-left: 8rpx;" v-if="userInfo.vips" v-for="(item, index) in userInfo.vips" :key="index">{{ item.name }}</text>
 			</view>
-			<navigator url="/pages/index/openVip" class="btn getMoney cu-btn bg-gradual-blue">
+			<navigator url="/pages/index/openVip" class="btn getMoney cu-btn bg-blue">
 				<text class="cuIcon cuIcon-vip"></text>
 				升级会员
 			</navigator>
@@ -35,7 +35,7 @@
 			<input type="digit" value="" placeholder="请填写奖学金" />
 		</view> -->
 
-		<view @click="withdrawal" class="btn saveBtn bg-gradual-blue">确认提现</view>
+		<view @click="withdrawal" class="btn saveBtn bg-blue">确认提现</view>
 	</view>
 </template>
 

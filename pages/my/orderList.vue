@@ -1,6 +1,6 @@
 <template>
 	<view class="orderListView">
-		<view class="title flex justify-between bg-gradual-blue align-center ">
+		<view class="title flex justify-between bg-blue align-center ">
 			<view style="flex: 1;"></view>
 			<view style="flex: 1;text-align: center;" class="tit">全部订单</view>
 			<view style="flex: 1;text-align: right;" class="edit">

@@ -20,7 +20,7 @@
 				</view>
 			</view>
 		</view>
-		<view class="endBox">———— 我是有底线的 ————</view>
+		<view v-show="canShowEnd" class="endBox">———— 我是有底线的 ————</view>
 	</view>
 </template>
 
@@ -31,7 +31,8 @@ export default {
 			list: [],
 			categoryId: '',
 			page: 1,
-			hasNext: true
+			hasNext: true,
+			canShowEnd:false,
 		};
 	},
 	onLoad(options) {
@@ -58,6 +59,7 @@ export default {
 				success: res => {
 					uni.hideLoading();
 					console.log('列表', res);
+					this.canShowEnd = true
 					if (res.data.code === 200) {
 						this.page++;
 						this.hasNext = res.data.data.hasNext;

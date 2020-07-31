@@ -1,19 +1,18 @@
 <template>
 	<view class="scholarshipView">
-		<view class="topInfo bg-gradual-purple">
+		<view class="topInfo  ">
 			<view class="headBox flex align-center justify-between">
 				<view class="flex align-center text-sm">
 					<image :src="userInfo.customer.headimgurl" mode="aspectFill"></image>
 					<view class="lv">{{ userInfo.customer.nickName }} <text style="margin-left: 8rpx;" v-if="userInfo.vips" v-for="(item, index) in userInfo.vips" :key="index"> {{ item.name }}</text></view>
 				</view>
-				<navigator url="/pages/index/openVip" class="btn cu-btn bg-gradual-blue">
-					<text class="cuIcon cuIcon-vip"></text>
+				<navigator url="/pages/index/openVip" class="btn cu-btn bg-blue"> 
 					升级会员
 				</navigator>
 			</view>
 			<view class="numBox text-center">
 				<view>奖学金(元)</view>
-				<navigator url="/pages/my/teamList" class="num text-bold">￥{{ totMoney|filterMoney }}</navigator>
+				<navigator url="/pages/my/teamList" class="num text-bold text-white">￥{{ totMoney|filterMoney }}</navigator>
 			</view>
 			<navigator url="/pages/my/withdrawal" class="getMoney btn cu-btn bg-gradual-red">提现</navigator>
 		</view>
@@ -21,12 +20,12 @@
 		<view class="titleBox flex text-center">
 			<view @click="changeTitIdx(0)" :class="{ select: titidx === 0 }" class="item">
 				已邀请
-				<text class="text-blue">普通</text>
+				<text class="text-blue2">普通</text>
 				会员:{{totalCount[0]}}
 			</view>
 			<view @click="changeTitIdx(1)" :class="{ select: titidx === 1 }" class="item">
 				已邀请
-				<text class="text-blue">VIP</text>
+				<text class="text-blue2">VIP</text>
 				会员:{{totalCount[1]}}
 			</view>
 		</view>
@@ -40,7 +39,7 @@
 
 		<will-nodata v-if="list[titidx].length === 0" tittle="暂无数据!"></will-nodata>
 
-		<view @click="getPoster" class="invitation btn cu-btn bg-gradual-blue">邀请学员</view>
+		<view @click="getPoster" class="invitation btn cu-btn bg-blue">邀请学员</view>
 		
 		<view v-if="showPoster" @click.self="showPoster = false" class="mc">
 			<view @click.stop="" class="mcContent text-white">
@@ -198,6 +197,9 @@ page {
 	padding-bottom: 40px;
 	.topInfo {
 		padding: 16rpx 30rpx 30rpx 30rpx;
+		background-image: url(../../static/vipbg.jpg)  ;
+		background-repeat: no-repeat;
+		background-size: cover;
 		.headBox {
 			image {
 				width: 70rpx;
@@ -207,9 +209,10 @@ page {
 				background-color: #ededed;
 			}
 			.btn {
-				padding: 2px 6px;
-				font-size: 24rpx;
-				border-radius: 16rpx;
+				padding: 2px 12px;
+				font-size: 28rpx;
+				border-radius: 10rpx;
+				background-color: #03cebb;
 			}
 		}
 		.numBox {
@@ -222,20 +225,21 @@ page {
 			display: block;
 			margin: 0 auto;
 			width: 6em;
-			height: 50rpx;
-			line-height: 50rpx;
+			height: 58rpx;
+			line-height: 58rpx;
 			border-radius: 10rpx;
 			font-size: 24rpx;
 			margin-top: 50px;
+			background-color: #ff6411;
 		}
 	}
 	.titleBox {
 		margin: 10px 0;
 		.item {
 			flex: 1;
-			border-bottom: 0px solid #058af3;
+			border-bottom: 0px solid #439387;
 			&.select {
-				border-bottom: 2px solid #058af3;
+				border-bottom: 2px solid #439387;
 			}
 		}
 	}

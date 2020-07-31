@@ -27,12 +27,12 @@
 		<view class="section latestCourses bg-white">
 			<view class="title">最新课程</view>
 			<view @click="navgater('/pages/index/videoDetails?id=' + item.id)" v-for="(item, index) in latestCourses" :key="index" class="item flex">
-				<image :src="imgUrl + item.coverUri" mode="widthFix"></image>
+				<image :src="imgUrl + item.coverUri" mode="aspectFill"></image>
 				<view class="infoBox flex flex-direction justify-between">
 					<view class="tit textov1">{{ item.title }}</view>
 					<view class="info flex justify-between align-center">
 						<view class="name">主讲人: {{ item.author }}</view>
-						<view class="time">{{ item.publishedTime }}</view>
+						<view class="time">{{ item.publishedTime.split(' ')[0] }}</view>
 					</view>
 				</view>
 			</view>
@@ -41,7 +41,7 @@
 		<view class="section latestCourses bg-white">
 			<view class="title">凯一专栏</view>
 			<view @click="navgater('/pages/index/videoDetails?id=' + item.id)" v-for="(item, index) in kaiyiList" :key="index" class="item flex">
-				<image :src="imgUrl + item.coverUri" mode="widthFix"></image>
+				<image :src="imgUrl + item.coverUri" mode="aspectFill"></image>
 				<view class="infoBox flex flex-direction justify-between">
 					<view class="tit textov1">{{ item.title }}</view>
 					<view class="info flex justify-between align-center">
@@ -98,7 +98,7 @@ export default {
 		this.getFreeList();
 		this.getAd();
 		this.getLatestList();
-		this.getKaiyiList(); 
+		this.getKaiyiList();
 
 		let token = this.getQueryString('token');
 		if (token) {
@@ -116,12 +116,12 @@ export default {
 			this.getKaiyiList();
 		}
 	},
-	methods: { 
+	methods: {
 		tryGetParent() {
 			let parentId = this.getQueryString('parentId') || '';
 			if (parentId) {
 				uni.setStorageSync('parentId', parentId);
-			} 
+			}
 			console.log('尝试url获取parentId', parentId);
 			let sparentId = uni.getStorageSync('parentId') || '';
 			if (sparentId) {
@@ -149,7 +149,7 @@ export default {
 				url: '/app/web/support/oauth/login',
 				data: { state: this.redirectUrl },
 				success: res => {
-					console.log('getToken', res); 
+					console.log('getToken', res);
 					if (res.data.code === 200) {
 						window.location.href = res.data.data;
 					}
@@ -172,13 +172,23 @@ export default {
 			// });
 		},
 		getUserInfo() {
+			this.showLoading();
 			this.request({
 				url: '/app/web/support/token',
 				method: 'POST',
 				success: res => {
+					uni.hideLoading();
 					console.log('userInfo', res);
 					if (res.data.code === 200) {
 						uni.setStorageSync('userInfo', res.data.data);
+						let videoDetailConfig = uni.getStorageSync('videoDetailConfig') || {};
+						console.log('检查是否是详情页启动程序', videoDetailConfig);
+						if (videoDetailConfig.id) {
+							uni.navigateTo({
+								url: '/pages/index/videoDetails?id=' + videoDetailConfig.id + '&type=' + videoDetailConfig.type
+							});
+							uni.removeStorageSync('videoDetailConfig');
+						}
 					}
 				}
 			});
@@ -256,13 +266,20 @@ export default {
 				}
 			});
 		},
-		bannerClick(item) {
-			if (item.categoryId == 0) {
+		bannerClick(item) { 
+			console.log(item);
+			if (item.type == 2) {
 				this.navgater('/pages/index/openVip');
-			} else if (item.categoryId > 0) {
-				// this.navgater('/pages/index/videoDetails?id=' + item.categoryId);
-				this.navgater('/pages/index/coursesList?id=' + item.categoryId);
+			} else if (item.type == 0 && item.videoId > 0) {
+				this.navgater('/pages/index/videoDetails?id=' + item.videoId);
 			}
+			// if (item.categoryId == 0) {
+			// 	this.navgater('/pages/index/openVip');
+			// } else if (item.categoryId > 0) {
+			// 	console.log(item.categoryId);
+			// 	this.navgater('/pages/index/videoDetails?id=' + item.categoryId + '&type=1');
+			// 	// this.navgater('/pages/index/coursesList?id=' + item.categoryId);
+			// }
 		},
 		navgater(path) {
 			uni.navigateTo({
@@ -345,8 +362,8 @@ export default {
 		}
 	}
 	.gotoVip {
-		padding: 0rpx 30rpx;
-		margin: 40rpx 0;
+		padding: 0rpx 10rpx;
+		margin: 14px 0 14px 0;
 		image {
 			width: 100%;
 			// height: 280rpx;

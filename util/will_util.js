@@ -50,12 +50,23 @@ Vue.prototype.request = function(obj) {
 			if (res && res.data && res.data.code === 3) {
 				uni.removeStorageSync('token')
 				uni.removeStorageSync('userInfo')
-				uni.showToast({
-					title: '登录超时!',
-					icon: 'none',
-					mask: true
-				})
+				// uni.showToast({
+				// 	title: '登录超时!',
+				// 	icon: 'none',
+				// 	mask: true
+				// })
 				window.location.href = this.redirectUrl
+				// uni.showModal({
+				// 	title: '提示',
+				// 	content: '您的登录信息过期了,请重新登录',
+				// 	showCancel: false,
+				// 	success: res => {
+				// 		window.location.href = this.redirectUrl
+				// 	},
+				// 	fail: (err) => {
+				// 		window.location.href = this.redirectUrl
+				// 	}
+				// })
 				// uni.reLaunch({
 				// 	url: '/pages/index/index'
 				// })
@@ -136,7 +147,7 @@ Vue.prototype.wxSdk = function(obj) {
 				'onMenuShareTimeline', //分享 给朋友
 			];
 			this.wx.config(config);
-			console.log('传给wx的配置为:',config)
+			console.log('传给wx的配置为:', config)
 			this.wx.ready(function() {
 				typeof obj.success == "function" && obj.success(res)
 			});
