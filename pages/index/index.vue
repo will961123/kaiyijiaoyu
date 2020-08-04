@@ -156,7 +156,7 @@ export default {
 				}
 			});
 			// this.request({
-			// 	url: '/app/web/support/oauth/2',
+			// 	url: '/app/web/support/oauth/1',
 			// 	method: 'POST',
 			// 	success: res => {
 			// 		console.log('getToken', res);

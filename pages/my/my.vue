@@ -22,10 +22,16 @@
 
 		<view class="endBox">{{ supportStr }}</view>
 
-		<view v-if="showPoster" @click.self="showPoster = false" class="mc">
-			<view @click.stop="" class="mcContent text-white">
-				<text @click="showPoster = false" class="cuIcon cuIcon-roundclosefill"></text>
+		<view v-show="showPoster" @click.self="showPoster = false" class="mc">
+			<view @click.stop="" class="mcContent text-white text-center">
+				<!-- <text @click="showPoster = false" class="cuIcon cuIcon-roundclosefill"></text> -->
 				<image :src="imgUrl + poster" mode="widthFix"></image>
+			</view>
+			<view class="selectList flex justify-between align-center">
+				<view @click="changePostType(index)" v-for="(item, index) in posteList" :key="index" :class="postType === index ? 'select' : ''" class="imgBox">
+					<image :src="imgUrl + item.imageUri" mode="widthFix"></image>
+					<text class="cuIcon cuIcon-roundcheckfill"></text>
+				</view>
 			</view>
 		</view>
 	</view>
@@ -70,6 +76,8 @@ export default {
 				}
 			],
 			poster: '',
+			postType: -1,
+			posteList:[],
 			showPoster: false,
 			userInfo: {}
 		};
@@ -125,28 +133,65 @@ export default {
 				}
 			});
 		},
-		getPoster() {
-			this.showLoading()
+		changePostType(idx) {
+			if (idx === this.postType) {
+				return false;
+			}
+			this.postType = idx;
+			this.getPoster(this.posteList[idx].id)
+		},
+		getPostList() {
+			this.showLoading();
 			this.request({
-				url: '/app/web/support/qrcode',
+				url: '/app/web/poster/list',
+				method: 'POST',
 				success: res => {
-					uni.hideLoading()
+					uni.hideLoading();
+					console.log('获取海报list', res);
+					if (res.data.code === 200) {
+						this.posteList = res.data.data;
+						this.showPoster = true;
+						this.postType = 0
+						this.getPoster(this.posteList[0].id)
+					}
+				}
+			});
+		},
+		getPoster(id) {
+			// this.showLoading();
+			// this.request({
+			// 	url: '/app/web/support/qrcode',
+			// 	success: res => {
+			// 		uni.hideLoading();
+			// 		console.log('获取海报', res);
+			// 		if (res.data.code === 200) {
+			// 			this.poster = res.data.data;
+			// 			this.showPoster = true;
+			// 		}
+			// 	}
+			// });	
+			this.showLoading();
+			this.request({
+				url: '/app/web/poster/h5/poste/'+id,
+				success: res => {
+					uni.hideLoading();
 					console.log('获取海报', res);
 					if (res.data.code === 200) {
-						this.poster =   res.data.data;
-						this.showPoster = true
+						this.poster = res.data.data; 
 					}
 				}
 			});
 		},
 		hanlderClick(idx) {
 			if (idx === 3) {
-				if (this.poster) {
-					this.showPoster = true;
-					return false;
-				}else{
-					this.getPoster()
-				}
+				this.postType = -1
+				this.getPostList(); 
+				// if (this.poster) {
+				// 	this.showPoster = true;
+				// 	return false;
+				// } else {
+				// 	this.getPoster();
+				// }
 			} else if (idx === 5) {
 				uni.showActionSheet({
 					itemList: ['呼叫', '复制'],
@@ -182,12 +227,13 @@ page {
 	top: 0;
 	width: 100%;
 	height: 100vh;
-	background-color: rgba(0, 0, 0, 0.3);
-	padding: 20px 30rpx;
-	.mcContent {
-		// width: calc(100% - 60rpx);
-		width: 100%;
-		height: 100%;
+	background-color: rgba(0, 0, 0, 0.4);
+	padding: 20px 0rpx;
+	.mcContent { 
+		// width: 100%;
+		// height: 100%;
+		width: 220px;
+		margin: 0 auto;
 		.cuIcon {
 			position: absolute;
 			right: 20rpx;
@@ -196,8 +242,55 @@ page {
 			font-size: 40rpx;
 		}
 		image {
-			width: 100%;
-			height: 100%;
+			width: 220px;
+			// width: 60%;
+			// height: 100%;
+		}
+	}
+	.selectList {
+		min-height: 100px;
+		position: absolute;
+		left: 0;
+		bottom: 80px;
+		width: 100%;
+		padding: 0 30rpx;
+		.imgBox {
+			position: relative;
+			width: 100px;
+			margin-right: 40rpx;
+			image {
+				width: 100%;
+				display: block;
+			}
+			text {
+				display: none;
+				position: absolute;
+				left: 50%;
+				top: 50%;
+				transform: translate(-50%, -50%);
+				color: #a2f453;
+				font-size: 48rpx;
+				z-index: 9;
+			}
+			&:last-child {
+				margin-right: 0;
+			}
+			&::after {
+				content: '';
+				position: absolute;
+				width: 100%;
+				height: 100%;
+				left: 0;
+				top: 0;
+			}
+			&.select {
+				&::after {
+					background: rgba(0, 0, 0, 0.45);
+				}
+				text {
+					display: block;
+				}
+			}
 		}
 	}
 }

@@ -1,4 +1,5 @@
 <script>
+console.log = function() {};
 export default {
 	onLaunch: function() {
 		let pageType = this.getQueryString('pageType') || '';
@@ -11,7 +12,7 @@ export default {
 			});
 			console.log('videoId', videoId);
 			console.log('videoType', videoType);
-			console.log('videoDetailConfig',uni.getStorageSync('videoDetailConfig'));
+			console.log('videoDetailConfig', uni.getStorageSync('videoDetailConfig'));
 		}
 		console.log('pageType', pageType);
 		console.log('App Launch');
@@ -26,12 +27,11 @@ export default {
 				}
 				if (!urltoken) {
 					uni.clearStorage('userInfo');
-					setTimeout(()=>{
+					setTimeout(() => {
 						uni.reLaunch({
 							url: '/pages/index/index'
 						});
-					},500)
-			
+					}, 500);
 				} else {
 					uni.setStorageSync('token', urltoken);
 				}
