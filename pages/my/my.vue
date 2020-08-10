@@ -22,12 +22,18 @@
 
 		<view class="endBox">{{ supportStr }}</view>
 
-		<view v-show="showPoster" @click.self="showPoster = false" class="mc">
-			<view @click.stop="" class="mcContent text-white text-center">
-				<!-- <text @click="showPoster = false" class="cuIcon cuIcon-roundclosefill"></text> -->
-				<image :src="imgUrl + poster" mode="widthFix"></image>
+		<view v-if="showPoster"   class="mc" :style="{ backgroundImage: 'url(' + imgUrl + posteList[postType].backgroundImageUri + ')' }">
+			<view @click="showPoster = false" class="close text-white" style="position: relative;z-index: 999;margin-left: 15rpx;" >
+				<text class="cuIcon cuIcon-back"></text>
+				<text>关闭</text>
 			</view>
-			<view class="selectList flex justify-between align-center">
+			<view @click.stop="" class="mcContent text-white text-center"> 
+				<image :src="imgUrl + poster" mode="widthFix"></image>
+				<view class="desc text-orange" style="margin-top: 8px;">
+					成功邀请好友，即可获得学费奖励
+				</view>
+			</view> 
+			<view class="selectList flex justify-between align-center bg-white">
 				<view @click="changePostType(index)" v-for="(item, index) in posteList" :key="index" :class="postType === index ? 'select' : ''" class="imgBox">
 					<image :src="imgUrl + item.imageUri" mode="widthFix"></image>
 					<text class="cuIcon cuIcon-roundcheckfill"></text>
@@ -77,7 +83,7 @@ export default {
 			],
 			poster: '',
 			postType: -1,
-			posteList:[],
+			posteList: [],
 			showPoster: false,
 			userInfo: {}
 		};
@@ -138,7 +144,7 @@ export default {
 				return false;
 			}
 			this.postType = idx;
-			this.getPoster(this.posteList[idx].id)
+			this.getPoster(this.posteList[idx].id);
 		},
 		getPostList() {
 			this.showLoading();
@@ -151,8 +157,8 @@ export default {
 					if (res.data.code === 200) {
 						this.posteList = res.data.data;
 						this.showPoster = true;
-						this.postType = 0
-						this.getPoster(this.posteList[0].id)
+						this.postType = 0;
+						this.getPoster(this.posteList[0].id);
 					}
 				}
 			});
@@ -169,23 +175,25 @@ export default {
 			// 			this.showPoster = true;
 			// 		}
 			// 	}
-			// });	
+			// });
 			this.showLoading();
 			this.request({
-				url: '/app/web/poster/h5/poste/'+id,
+				url: '/app/web/poster/h5/poste/' + id,
 				success: res => {
-					uni.hideLoading();
+					setTimeout(() => {
+						uni.hideLoading();
+					}, 500);
 					console.log('获取海报', res);
 					if (res.data.code === 200) {
-						this.poster = res.data.data; 
+						this.poster = res.data.data;
 					}
 				}
 			});
 		},
 		hanlderClick(idx) {
 			if (idx === 3) {
-				this.postType = -1
-				this.getPostList(); 
+				this.postType = -1;
+				this.getPostList();
 				// if (this.poster) {
 				// 	this.showPoster = true;
 				// 	return false;
@@ -228,8 +236,11 @@ page {
 	width: 100%;
 	height: 100vh;
 	background-color: rgba(0, 0, 0, 0.4);
+	background-image: url('http://img.kaiyi999.com/a787587a06d3944f600701a8f7c6ec81.jpeg');
+	background-size: cover;
+	background-repeat: no-repeat;
 	padding: 20px 0rpx;
-	.mcContent { 
+	.mcContent {
 		// width: 100%;
 		// height: 100%;
 		width: 220px;
@@ -251,9 +262,21 @@ page {
 		min-height: 100px;
 		position: absolute;
 		left: 0;
-		bottom: 80px;
+		bottom: 50px;
 		width: 100%;
-		padding: 0 30rpx;
+		padding: 10px 30rpx;
+		&::after{
+			width: 100%;
+			height: 26px;
+			line-height: 26px;
+			background-color: #000;
+			content: '长按上方图片发送给好友';
+			position: absolute;
+			left: 0;
+			top: -26px;
+			color: #fff;
+			text-align: center;
+		}
 		.imgBox {
 			position: relative;
 			width: 100px;
@@ -268,8 +291,9 @@ page {
 				left: 50%;
 				top: 50%;
 				transform: translate(-50%, -50%);
-				color: #a2f453;
-				font-size: 48rpx;
+				// color: #a2f453;
+				color: #fff;
+				font-size: 58rpx;
 				z-index: 9;
 			}
 			&:last-child {
