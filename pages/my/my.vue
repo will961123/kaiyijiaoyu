@@ -243,7 +243,7 @@ page {
 	.mcContent {
 		// width: 100%;
 		// height: 100%;
-		width: 220px;
+		// width: 220px;
 		margin: 0 auto;
 		.cuIcon {
 			position: absolute;

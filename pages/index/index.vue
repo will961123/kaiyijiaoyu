@@ -145,31 +145,31 @@ export default {
 			});
 		},
 		loginGetToken() {
-			this.request({
-				url: '/app/web/support/oauth/login',
-				data: { state: this.redirectUrl },
-				success: res => {
-					console.log('getToken', res);
-					if (res.data.code === 200) {
-						window.location.href = res.data.data;
-					}
-				}
-			});
 			// this.request({
-			// 	url: '/app/web/support/oauth/2',
-			// 	method: 'POST',
+			// 	url: '/app/web/support/oauth/login',
+			// 	data: { state: this.redirectUrl },
 			// 	success: res => {
-			// 		console.log('getToken', res); 
+			// 		console.log('getToken', res);
 			// 		if (res.data.code === 200) {
-			// 			uni.setStorageSync('token', res.data.data);
-			// 			let parentId = uni.getStorageSync('parentId');
-			// 			if (parentId) {
-			// 				this.bindParent(parentId);
-			// 			}
-			// 			this.getUserInfo();
+			// 			window.location.href = res.data.data;
 			// 		}
 			// 	}
 			// });
+			this.request({
+				url: '/app/web/support/oauth/2',
+				method: 'POST',
+				success: res => {
+					console.log('getToken', res); 
+					if (res.data.code === 200) {
+						uni.setStorageSync('token', res.data.data);
+						let parentId = uni.getStorageSync('parentId');
+						if (parentId) {
+							this.bindParent(parentId);
+						}
+						this.getUserInfo();
+					}
+				}
+			});
 		},
 		getUserInfo() {
 			this.showLoading();

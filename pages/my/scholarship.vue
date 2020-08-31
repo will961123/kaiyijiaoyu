@@ -39,14 +39,34 @@
 
 		<will-nodata v-if="list[titidx].length === 0" tittle="暂无数据!"></will-nodata>
 
-		<view @click="getPoster" class="invitation btn cu-btn bg-blue">邀请学员</view>
+		<view @click="getPostList" class="invitation btn cu-btn bg-blue">邀请学员</view>
 		
-		<view v-if="showPoster" @click.self="showPoster = false" class="mc">
+		
+		<view v-if="showPoster"   class="mc" :style="{ backgroundImage: 'url(' + imgUrl + posteList[postType].backgroundImageUri + ')' }">
+			<view @click="showPoster = false" class="close text-white" style="position: relative;z-index: 999;margin-left: 15rpx;" >
+				<text class="cuIcon cuIcon-back"></text>
+				<text>关闭</text>
+			</view>
+			<view @click.stop="" class="mcContent text-white text-center"> 
+				<image :src="imgUrl + poster" mode="widthFix"></image>
+				<view class="desc text-orange" style="margin-top: 8px;">
+					成功邀请好友，即可获得学费奖励
+				</view>
+			</view> 
+			<view class="selectList flex justify-between align-center bg-white">
+				<view @click="changePostType(index)" v-for="(item, index) in posteList" :key="index" :class="postType === index ? 'select' : ''" class="imgBox">
+					<image :src="imgUrl + item.imageUri" mode="widthFix"></image>
+					<text class="cuIcon cuIcon-roundcheckfill"></text>
+				</view>
+			</view>
+		</view>
+		
+		<!-- <view v-if="showPoster" @click.self="showPoster = false" class="mc">
 			<view @click.stop="" class="mcContent text-white">
 				<text @click="showPoster = false" class="cuIcon cuIcon-roundclosefill"></text>
 				<image :src="imgUrl + poster" mode="widthFix"></image>
 			</view>
-		</view>
+		</view> -->
 	</view>
 </template>
 
@@ -61,7 +81,9 @@ export default {
 			page: [1, 1],
 			totalCount:[0,0],
 			hasNext: [true, true],
-			poster: '',
+			poster: '', 
+			postType: -1,
+			posteList: [],
 			showPoster: false,
 		};
 	},
@@ -90,20 +112,66 @@ export default {
 		}
 	},
 	methods: {
-		getPoster() {
-			this.showLoading()
+		// getPoster() {
+		// 	this.showLoading()
+		// 	this.request({
+		// 		url: '/app/web/support/qrcode',
+		// 		success: res => {
+		// 			uni.hideLoading()
+		// 			console.log('获取海报', res);
+		// 			if (res.data.code === 200) {
+		// 				this.poster =   res.data.data;
+		// 				this.showPoster = true
+		// 			}
+		// 		}
+		// 	});
+		// },
+		
+		getPostList() {
+			this.showLoading();
 			this.request({
-				url: '/app/web/support/qrcode',
+				url: '/app/web/poster/list',
+				method: 'POST',
 				success: res => {
-					uni.hideLoading()
-					console.log('获取海报', res);
+					uni.hideLoading();
+					console.log('获取海报list', res);
 					if (res.data.code === 200) {
-						this.poster =   res.data.data;
-						this.showPoster = true
+						this.posteList = res.data.data;
+						this.showPoster = true;
+						this.postType = 0;
+						this.getPoster(this.posteList[0].id);
 					}
 				}
 			});
 		},
+		getPoster(id) {
+			// this.showLoading();
+			// this.request({
+			// 	url: '/app/web/support/qrcode',
+			// 	success: res => {
+			// 		uni.hideLoading();
+			// 		console.log('获取海报', res);
+			// 		if (res.data.code === 200) {
+			// 			this.poster = res.data.data;
+			// 			this.showPoster = true;
+			// 		}
+			// 	}
+			// });
+			this.showLoading();
+			this.request({
+				url: '/app/web/poster/h5/poste/' + id,
+				success: res => {
+					setTimeout(() => {
+						uni.hideLoading();
+					}, 500);
+					console.log('获取海报', res);
+					if (res.data.code === 200) {
+						this.poster = res.data.data;
+					}
+				}
+			});
+		},
+		
 		getUserInfo() {
 			this.request({
 				url: '/app/web/support/token',
@@ -168,31 +236,95 @@ export default {
 page {
 	background-color: #fff;
 }
-	.mc {
-		position: fixed;
+.mc {
+	position: fixed;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100vh;
+	background-color: rgba(0, 0, 0, 0.4);
+	background-image: url('http://img.kaiyi999.com/a787587a06d3944f600701a8f7c6ec81.jpeg');
+	background-size: cover;
+	background-repeat: no-repeat;
+	padding: 20px 0rpx;
+	.mcContent {
+		// width: 100%;
+		// height: 100%;
+		// width: 220px;
+		margin: 0 auto;
+		.cuIcon {
+			position: absolute;
+			right: 20rpx;
+			top: 10px;
+			z-index: 999;
+			font-size: 40rpx;
+		}
+		image {
+			width: 220px;
+			// width: 60%;
+			// height: 100%;
+		}
+	}
+	.selectList {
+		min-height: 100px;
+		position: absolute;
 		left: 0;
-		top: 0;
+		bottom: 50px;
 		width: 100%;
-		height: 100vh;
-		background-color: rgba(0, 0, 0, 0.3);
-		padding: 20px 30rpx;
-		.mcContent {
-			// width: calc(100% - 60rpx);
+		padding: 10px 30rpx;
+		&::after{
 			width: 100%;
-			height: 100%;
-			.cuIcon {
-				position: absolute;
-				right: 20rpx;
-				top: 10px;
-				z-index: 999;
-				font-size: 40rpx;
-			}
+			height: 26px;
+			line-height: 26px;
+			background-color: #000;
+			content: '长按上方图片发送给好友';
+			position: absolute;
+			left: 0;
+			top: -26px;
+			color: #fff;
+			text-align: center;
+		}
+		.imgBox {
+			position: relative;
+			width: 100px;
+			margin-right: 40rpx;
 			image {
 				width: 100%;
+				display: block;
+			}
+			text {
+				display: none;
+				position: absolute;
+				left: 50%;
+				top: 50%;
+				transform: translate(-50%, -50%);
+				// color: #a2f453;
+				color: #fff;
+				font-size: 58rpx;
+				z-index: 9;
+			}
+			&:last-child {
+				margin-right: 0;
+			}
+			&::after {
+				content: '';
+				position: absolute;
+				width: 100%;
 				height: 100%;
+				left: 0;
+				top: 0;
+			}
+			&.select {
+				&::after {
+					background: rgba(0, 0, 0, 0.45);
+				}
+				text {
+					display: block;
+				}
 			}
 		}
 	}
+}
 .scholarshipView {
 	padding-bottom: 40px;
 	.topInfo {
